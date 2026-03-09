@@ -20,7 +20,7 @@ export function StarfieldBackground() {
 
     let width = 0;
     let height = 0;
-    let scale = 1;
+    const scale = 1;
     let stars: Star[] = [];
     let pointerX: number | null | undefined;
     let pointerY: number | null | undefined;
@@ -72,9 +72,8 @@ export function StarfieldBackground() {
     function resize() {
       const el = canvasRef.current;
       if (!el) return;
-      scale = window.devicePixelRatio || 1;
-      width = window.innerWidth * scale;
-      height = window.innerHeight * scale;
+      width = window.innerWidth;
+      height = window.innerHeight;
       el.width = width;
       el.height = height;
       if (!stars.length) {
@@ -102,13 +101,13 @@ export function StarfieldBackground() {
 
     function onMouseMove(event: MouseEvent) {
       touchInput = false;
-      movePointer(event.clientX * scale, event.clientY * scale);
+      movePointer(event.clientX, event.clientY);
     }
 
     function onTouchMove(event: TouchEvent) {
       touchInput = true;
       const t = event.touches[0];
-      movePointer(t.clientX * scale, t.clientY * scale);
+      movePointer(t.clientX, t.clientY);
       event.preventDefault();
     }
 

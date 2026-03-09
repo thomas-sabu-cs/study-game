@@ -26,21 +26,6 @@ export function MusicToggle() {
     }
   }, []);
 
-  useEffect(() => {
-    // If enabled on page load, don't autoplay. We'll start on first gesture.
-    if (!enabled) return;
-    const onFirstGesture = () => {
-      void start();
-    };
-    window.addEventListener("pointerdown", onFirstGesture, { once: true });
-    window.addEventListener("keydown", onFirstGesture, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", onFirstGesture);
-      window.removeEventListener("keydown", onFirstGesture);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
-
   function getOrCreateAudio(): HTMLAudioElement {
     if (audioRef.current) return audioRef.current;
     const src = process.env.NEXT_PUBLIC_RELAXING_MP3_URL || DEFAULT_SRC;
