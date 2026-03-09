@@ -82,6 +82,16 @@ export function MatchGameClient({
     startRef.current = Date.now();
   }, [quizId]);
 
+  function playCompletionSound() {
+    try {
+      const audio = new Audio("/audio/interaction/Completion.mp3");
+      audio.volume = 0.9;
+      void audio.play();
+    } catch {
+      // ignore
+    }
+  }
+
   useEffect(() => {
     if (!selectedLeft || !selectedRight) return;
     if (selectedLeft === selectedRight) {
@@ -144,6 +154,7 @@ export function MatchGameClient({
     const score = correctPairs;
     const pct = Math.round((score / total) * 100);
     const current = { pct, time: doneAtSeconds, correct: score, total };
+    playCompletionSound();
     setBestStats((prev) => {
       let next = current;
       if (prev) {

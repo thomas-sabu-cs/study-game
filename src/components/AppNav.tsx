@@ -12,7 +12,6 @@ const navLinks = [
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/cards", label: "Notecards", icon: StickyNote },
   { href: "/play", label: "Play", icon: Gamepad2 },
-  { href: "/profile", label: "Profile", icon: UserCog },
 ];
 
 export function AppNav() {
@@ -42,6 +41,13 @@ export function AppNav() {
         </div>
         <div className="flex items-center gap-2">
           <MusicToggle />
+          <Link
+            href={`/profile?from=${encodeURIComponent(pathname || "/")}`}
+            className="btn-dynamic hidden items-center gap-1.5 rounded-lg border border-pastel-sage/60 bg-white/80 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-pastel-mint/30 sm:inline-flex"
+          >
+            <UserCog className="h-3.5 w-3.5" />
+            Profile
+          </Link>
           <UserButton
             afterSignOutUrl="/"
             appearance={{

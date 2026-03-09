@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type BackgroundMode = "stars" | "perlin";
+export type BackgroundMode = "stars" | "starsLight" | "perlin";
 
 export interface UserSettings {
   user_id: string;
@@ -33,7 +33,9 @@ export async function updateUserSettings(formData: FormData): Promise<void> {
   if (!userId) return;
   const supabase = createAdminClient();
   const rawMode = (formData.get("background_mode") as string | null) || "stars";
-  const background_mode: BackgroundMode = rawMode === "perlin" ? "perlin" : "stars";
+  let background_mode: BackgroundMode = "stars";
+  if (rawMode === "perlin") background_mode = "perlin";
+  else if (rawMode === "starsLight") background_mode = "starsLight";
   await supabase
     .from("user_settings")
     .upsert(

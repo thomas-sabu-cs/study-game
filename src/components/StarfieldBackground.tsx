@@ -2,14 +2,15 @@
 
 import { useEffect, useRef } from "react";
 
-const STAR_COLOR = "#ffffff";
+const STAR_COLOR_DARK = "#ffffff";
+const STAR_COLOR_LIGHT = "#000000";
 const STAR_SIZE = 3;
 const STAR_MIN_SCALE = 0.2;
 const OVERFLOW_THRESHOLD = 50;
 
 type Star = { x: number; y: number; z: number };
 
-export function StarfieldBackground() {
+export function StarfieldBackground({ variant = "dark" }: { variant?: "dark" | "light" }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
@@ -141,13 +142,14 @@ export function StarfieldBackground() {
     function render() {
       const ctx = canvasRef.current?.getContext("2d");
       if (!ctx) return;
+      const starColor = variant === "light" ? STAR_COLOR_LIGHT : STAR_COLOR_DARK;
       ctx.clearRect(0, 0, width, height);
       stars.forEach((star) => {
         ctx.beginPath();
         ctx.lineCap = "round";
         ctx.lineWidth = STAR_SIZE * star.z * scale;
         ctx.globalAlpha = 0.5 + 0.5 * Math.random();
-        ctx.strokeStyle = STAR_COLOR;
+        ctx.strokeStyle = starColor;
         ctx.beginPath();
         ctx.moveTo(star.x, star.y);
         let tailX = velocity.x * 2;
@@ -169,34 +171,37 @@ export function StarfieldBackground() {
     step();
 
     window.addEventListener("resize", resize);
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
-    canvas.addEventListener("touchend", onMouseLeave);
+    // Listen on window so interaction still works even if other layers cover the canvas.
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onMouseLeave);
     document.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("touchmove", onTouchMove);
-      canvas.removeEventListener("touchend", onMouseLeave);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onMouseLeave);
       document.removeEventListener("mouseleave", onMouseLeave);
     };
-  }, []);
+  }, [variant]);
 
   return (
     <div
-      className="fixed inset-0 z-0"
+      className="pointer-events-none fixed inset-0 z-0"
       aria-hidden
       style={{
         width: "100%",
         height: "100%",
-        backgroundColor: "#000",
+        backgroundColor: variant === "light" ? "#e0fff5" : "#000000",
         backgroundImage:
-          "radial-gradient(circle at top right, rgba(121, 68, 154, 0.13), transparent), radial-gradient(circle at 20% 80%, rgba(41, 196, 255, 0.13), transparent)",
+          variant === "light"
+            ? "radial-gradient(circle at top right, rgba(0, 128, 128, 0.08), transparent), radial-gradient(circle at 20% 80%, rgba(0, 200, 180, 0.08), transparent)"
+            : "radial-gradient(circle at top right, rgba(121, 68, 154, 0.13), transparent), radial-gradient(circle at 20% 80%, rgba(41, 196, 255, 0.13), transparent)",
       }}
     >
-      <canvas ref={canvasRef} className="w-full h-full" />
+      <canvas ref={canvasRef} className="pointer-events-auto w-full h-full" />
     </div>
   );
 }

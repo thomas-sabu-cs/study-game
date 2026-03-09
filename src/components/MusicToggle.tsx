@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 const STORAGE_KEY = "study-game-music-enabled";
-// Default to your added file: public/audio/background_music.mp3
-const DEFAULT_SRC = "/audio/background_music.mp3";
+// Default to your added file: public/audio/background/background_music.mp3
+// (update this path if your filename is different)
+const DEFAULT_SRC = "/audio/background/background_music.mp3";
 
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
@@ -27,8 +28,26 @@ export function MusicToggle() {
   }, []);
 
   function getOrCreateAudio(): HTMLAudioElement {
-    if (audioRef.current) return audioRef.current;
-    const src = process.env.NEXT_PUBLIC_RELAXING_MP3_URL || DEFAULT_SRC;
+    // Always resolve the desired src from localStorage (or fallback).
+    let src = DEFAULT_SRC;
+    try {
+      const storedSrc = window.localStorage.getItem("study-game-music-src");
+      if (storedSrc) src = storedSrc;
+    } catch {
+      // ignore
+    }
+    const existing = audioRef.current;
+    if (existing) {
+      // If the source has changed (e.g. new first track in queue), update it.
+      const currentSrc = existing.src || "";
+      if (!currentSrc.endsWith(src)) {
+        existing.pause();
+        existing.src = src;
+        existing.currentTime = 0;
+      }
+      existing.volume = volume / 100;
+      return existing;
+    }
     const audio = new Audio(src);
     audio.loop = true;
     audio.preload = "auto";

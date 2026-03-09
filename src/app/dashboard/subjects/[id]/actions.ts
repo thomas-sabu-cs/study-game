@@ -9,8 +9,9 @@ import type { StudyFile } from "@/types";
 import crypto from "crypto";
 
 const BUCKET = "study-files";
-// Keep under Vercel's 4.5 MB serverless request limit; 4 MB leaves headroom
-const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB
+// NOTE: On Vercel, the hard request body limit is ~4.5 MB.
+// This 8 MB cap is mainly for local/dev or self-hosted deployments.
+const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB
 const ALLOWED_MIMES = [
   "application/pdf",
   "text/plain",
@@ -29,7 +30,12 @@ export async function uploadFile(
     const file = formData.get("file") as File | null;
     const subjectId = formData.get("subjectId") as string | null;
     if (!file || !subjectId) return { error: "Missing file or subject" };
-    if (file.size > MAX_FILE_BYTES) return { error: "File too large. Maximum size is 4 MB (use a smaller PDF or split it)." };
+    if (file.size > MAX_FILE_BYTES) {
+      return {
+        error:
+          "File too large. Maximum size is 8 MB here, but Vercel may still reject requests over ~4.5 MB. Try a smaller PDF or split it if it fails.",
+      };
+    }
 
     let mime = file.type || "application/octet-stream";
     const ext = (file.name || "").toLowerCase();

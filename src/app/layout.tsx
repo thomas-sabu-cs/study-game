@@ -21,13 +21,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Study Game – Your Locker",
+  title: "Study Buddy – Your Locker",
   description: "Upload notes, generate quizzes, and level up your study streak.",
   manifest: "/manifest.json",
   themeColor: "#a5d6a7",
   appleWebApp: {
     capable: true,
-    title: "Study Game",
+    title: "Study Buddy",
     statusBarStyle: "black-translucent",
   },
   icons: {
@@ -44,8 +44,10 @@ export default async function RootLayout({
 }>) {
   const totalPlaytimeSeconds = await getTotalPlaytimeSeconds();
   const rainbowUnlocked = totalPlaytimeSeconds >= RAINBOW_UNLOCK_SECONDS;
-   const settings = await getUserSettings();
-   const backgroundMode = settings?.background_mode ?? "stars";
+  const settings = await getUserSettings();
+  const backgroundMode = settings?.background_mode ?? "stars";
+  const baseTextClass =
+    backgroundMode === "stars" ? "text-gray-100" : "text-gray-800";
 
   const content = publishableKey ? (
     <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>
@@ -54,11 +56,13 @@ export default async function RootLayout({
   );
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen font-sans">
+      <body className={`min-h-screen font-sans ${baseTextClass}`}>
         {backgroundMode === "perlin" ? (
           <NoiseParticleBackground rainbowUnlocked={rainbowUnlocked} />
+        ) : backgroundMode === "starsLight" ? (
+          <StarfieldBackground variant="light" />
         ) : (
-          <StarfieldBackground />
+          <StarfieldBackground variant="dark" />
         )}
         <div className="relative z-[1]">{content}</div>
       </body>

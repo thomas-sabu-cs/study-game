@@ -1,6 +1,6 @@
 {
-  "name": "Study Game",
-  "short_name": "StudyGame",
+  "name": "Study Buddy",
+  "short_name": "StudyBuddy",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f1f8e9",

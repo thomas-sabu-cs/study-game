@@ -103,6 +103,16 @@ export function TakeQuizClient({
     }
   }, [quizId]);
 
+  function playCompletionSound() {
+    try {
+      const audio = new Audio("/audio/interaction/Completion.mp3");
+      audio.volume = 0.9;
+      void audio.play();
+    } catch {
+      // ignore
+    }
+  }
+
   if (questions.length === 0) {
     return (
       <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
@@ -178,6 +188,7 @@ export function TakeQuizClient({
       setFinalAnswers(allAnswers);
       setTotalTimeSeconds(totalSec);
       setCompletedQuestionTimes(allTimes);
+      playCompletionSound();
       // Save attempt to Supabase (game_type 'quiz')
       saveQuizAttempt(
         quizId,
