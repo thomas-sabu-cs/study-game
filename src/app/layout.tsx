@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { getTotalPlaytimeSeconds } from "@/app/play/actions";
+import { NoiseParticleBackground } from "@/components/NoiseParticleBackground";
 import "./globals.css";
+
+const RAINBOW_UNLOCK_HOURS = 1;
+const RAINBOW_UNLOCK_SECONDS = RAINBOW_UNLOCK_HOURS * 3600;
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +35,14 @@ export const metadata: Metadata = {
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const totalPlaytimeSeconds = await getTotalPlaytimeSeconds();
+  const rainbowUnlocked = totalPlaytimeSeconds >= RAINBOW_UNLOCK_SECONDS;
+
   const content = publishableKey ? (
     <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>
   ) : (
@@ -42,7 +50,10 @@ export default function RootLayout({
   );
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen font-sans">{content}</body>
+      <body className="min-h-screen font-sans">
+        <NoiseParticleBackground rainbowUnlocked={rainbowUnlocked} />
+        <div className="relative z-[1]">{content}</div>
+      </body>
     </html>
   );
 }

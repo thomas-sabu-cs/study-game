@@ -14,7 +14,7 @@ export default async function NotesPage() {
 
   if (!subject) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
+      <main className="min-h-screen p-6">
         <div className="mx-auto max-w-2xl">
           <p className="text-gray-600">Sign in to use Notes.</p>
         </div>
@@ -23,7 +23,7 @@ export default async function NotesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
           <StickyNote className="h-8 w-8 text-pastel-leaf" />

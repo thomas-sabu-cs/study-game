@@ -1,9 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { List, History, BookOpen, Clock, HelpCircle, Layers, Library } from "lucide-react";
-import type { RecentAttempt, QuizListItem } from "./actions";
+import { List, History, BookOpen, Clock, HelpCircle, Layers, Trash2, RotateCcw, Library } from "lucide-react";
+import {
+  deleteQuiz,
+  restoreQuiz,
+  permanentlyDeleteQuiz,
+  type RecentAttempt,
+  type QuizListItem,
+  type DeletedQuizItem,
+} from "./actions";
+import type { Flashcard } from "@/app/cards/actions";
+import { FlashcardGameClient } from "@/app/cards/FlashcardGameClient";
 
 function quizDisplayName(q: QuizListItem): string {
   if (q.name?.trim()) return q.name.trim();
@@ -17,15 +27,35 @@ function formatTime(seconds: number): string {
   return s ? `${m}m ${s}s` : `${m}m`;
 }
 
+function QuizStats({ q }: { q: QuizListItem }) {
+  const played = q.times_played ?? 0;
+  if (played === 0) return null;
+  const parts: string[] = [];
+  parts.push(`${played} play${played !== 1 ? "s" : ""}`);
+  if (q.best_accuracy_pct != null) parts.push(`Best ${q.best_accuracy_pct}%`);
+  if (q.best_time_seconds != null && q.best_time_seconds > 0)
+    parts.push(`Best ${formatTime(q.best_time_seconds)}`);
+  return (
+    <span className="text-xs text-gray-500 mt-0.5 block">
+      {parts.join(" · ")}
+    </span>
+  );
+}
+
 export function PlayTabs({
   quizzes,
   recents,
+  recentlyDeleted,
+  flashcards,
 }: {
   quizzes: QuizListItem[];
   recents: RecentAttempt[];
+  recentlyDeleted: DeletedQuizItem[];
+  flashcards: Flashcard[];
 }) {
-  const [tab, setTab] = useState<"quizzes" | "recents">("quizzes");
-  const [gameType, setGameType] = useState<"quiz" | "match" | "notecards">("quiz");
+  const router = useRouter();
+  const [tab, setTab] = useState<"quizzes" | "recents" | "deleted">("quizzes");
+  const [gameType, setGameType] = useState<"quiz" | "match" | "flashcards">("quiz");
 
   return (
     <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 shadow-sm overflow-hidden">
@@ -59,12 +89,15 @@ export function PlayTabs({
           </button>
           <button
             type="button"
-            disabled
-            title="Coming soon"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+            onClick={() => setGameType("flashcards")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium transition ${
+              gameType === "flashcards"
+                ? "bg-pastel-sage/70 text-gray-800"
+                : "text-gray-600 hover:bg-pastel-mint/30"
+            }`}
           >
             <Library className="h-4 w-4" />
-            Notecards
+            Flip
           </button>
         </div>
       </div>
@@ -93,11 +126,37 @@ export function PlayTabs({
           <History className="h-4 w-4" />
           Recents
         </button>
+        <button
+          type="button"
+          onClick={() => setTab("deleted")}
+          className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition ${
+            tab === "deleted"
+              ? "bg-pastel-sage/60 text-gray-800"
+              : "text-gray-600 hover:bg-pastel-mint/30"
+          }`}
+        >
+          <Trash2 className="h-4 w-4" />
+          Recently deleted
+        </button>
       </div>
 
       <div className="p-4">
         {tab === "quizzes" ? (
           <>
+            {gameType === "flashcards" && (
+              <>
+                <div className="mb-4">
+                  <FlashcardGameClient cards={flashcards} />
+                </div>
+                <Link
+                  href="/cards"
+                  className="inline-flex items-center gap-2 rounded-xl border border-pastel-sage/50 bg-white/70 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-pastel-mint/50 transition"
+                >
+                  <BookOpen className="h-4 w-4" />
+                  Manage notecards
+                </Link>
+              </>
+            )}
             {gameType === "quiz" && (
               <>
                 {quizzes.length === 0 ? (
@@ -108,12 +167,32 @@ export function PlayTabs({
                   <ul className="space-y-2">
                     {quizzes.map((q) => (
                       <li key={q.id}>
-                        <Link
-                          href={`/play/${q.id}`}
-                          className="block rounded-xl border border-pastel-sage/40 bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-pastel-mint/40 transition"
-                        >
-                          {quizDisplayName(q)}
-                        </Link>
+                        <div className="flex items-center gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3">
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/play/${q.id}`}
+                              className="text-sm font-medium text-gray-800 hover:text-pastel-leaf transition"
+                            >
+                              {quizDisplayName(q)}
+                            </Link>
+                            <QuizStats q={q} />
+                          </div>
+                          <span className="text-xs text-gray-500 shrink-0">
+                            {new Date(q.created_at).toLocaleDateString()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              await deleteQuiz(q.id);
+                              router.refresh();
+                            }}
+                            className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition"
+                            title="Delete quiz"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -130,12 +209,32 @@ export function PlayTabs({
                   <ul className="space-y-2">
                     {quizzes.map((q) => (
                       <li key={q.id}>
-                        <Link
-                          href={`/play/match/${q.id}`}
-                          className="block rounded-xl border border-pastel-sage/40 bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-pastel-mint/40 transition"
-                        >
-                          {quizDisplayName(q)}
-                        </Link>
+                        <div className="flex items-center gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3">
+                          <div className="flex-1 min-w-0">
+                            <Link
+                              href={`/play/match/${q.id}`}
+                              className="text-sm font-medium text-gray-800 hover:text-pastel-leaf transition"
+                            >
+                              {quizDisplayName(q)}
+                            </Link>
+                            <QuizStats q={q} />
+                          </div>
+                          <span className="text-xs text-gray-500 shrink-0">
+                            {new Date(q.created_at).toLocaleDateString()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              await deleteQuiz(q.id);
+                              router.refresh();
+                            }}
+                            className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition"
+                            title="Delete quiz"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </li>
                     ))}
                   </ul>
@@ -145,16 +244,62 @@ export function PlayTabs({
                 </p>
               </>
             )}
-            {gameType === "notecards" && (
-              <p className="text-gray-500 py-4">Notecards coming soon. Pick a quiz above when it&apos;s ready.</p>
+            {gameType !== "flashcards" && (
+              <Link
+                href="/dashboard"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-pastel-sage px-4 py-2 text-sm font-medium text-gray-800 hover:bg-pastel-leaf transition"
+              >
+                <BookOpen className="h-4 w-4" />
+                Go to Locker
+              </Link>
             )}
-            <Link
-              href="/dashboard"
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-pastel-sage px-4 py-2 text-sm font-medium text-gray-800 hover:bg-pastel-leaf transition"
-            >
-              <BookOpen className="h-4 w-4" />
-              Go to Locker
-            </Link>
+          </>
+        ) : tab === "deleted" ? (
+          <>
+            {recentlyDeleted.length === 0 ? (
+              <p className="text-gray-500 py-4">
+                No recently deleted quizzes. Deleted quizzes appear here until you permanently delete them.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {recentlyDeleted.map((q) => (
+                  <li key={q.id}>
+                    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3">
+                      <span className="flex-1 min-w-0 text-sm font-medium text-gray-800">
+                        {quizDisplayName(q)}
+                      </span>
+                      <span className="text-xs text-gray-500 shrink-0">
+                        Deleted {new Date(q.deleted_at).toLocaleDateString()}
+                      </span>
+                      <div className="flex gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await restoreQuiz(q.id);
+                            router.refresh();
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-pastel-sage/50 bg-pastel-mint/30 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-pastel-mint/50 transition"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" />
+                          Restore
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await permanentlyDeleteQuiz(q.id);
+                            router.refresh();
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 transition"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                          Permanently delete
+                        </button>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </>
         ) : (
           <>

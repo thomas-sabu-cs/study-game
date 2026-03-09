@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Clock, RotateCcw } from "lucide-react";
+import { Clock, RotateCcw, ArrowLeft } from "lucide-react";
 import type { QuizQuestion } from "@/types";
 
 type Pair = {
@@ -47,6 +47,12 @@ export function MatchGameClient({
   const [mistakesByPair, setMistakesByPair] = useState<Record<string, number>>({});
   const [flashWrong, setFlashWrong] = useState<{ left?: string; right?: string } | null>(null);
   const [doneAtSeconds, setDoneAtSeconds] = useState<number | null>(null);
+  const [bestStats, setBestStats] = useState<{
+    pct: number;
+    time: number;
+    correct: number;
+    total: number;
+  } | null>(null);
 
   const pairs: Pair[] = useMemo(() => {
     const mc = questions
@@ -104,6 +110,56 @@ export function MatchGameClient({
     setDoneAtSeconds(Math.max(0, Math.round(elapsed)));
   }, [complete]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const key = `study-game-best-match-${quizId}`;
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        pct: number;
+        time: number;
+        correct: number;
+        total: number;
+      };
+      if (
+        parsed &&
+        typeof parsed.pct === "number" &&
+        typeof parsed.time === "number" &&
+        typeof parsed.correct === "number" &&
+        typeof parsed.total === "number"
+      ) {
+        setBestStats(parsed);
+      }
+    } catch {
+      // ignore
+    }
+  }, [quizId]);
+
+  useEffect(() => {
+    if (!complete || total === 0 || doneAtSeconds == null || typeof window === "undefined") return;
+    const mistakes = Object.values(mistakesByPair).reduce((a, b) => a + b, 0);
+    const correctPairs = pairs.filter((p) => (mistakesByPair[p.id] ?? 0) === 0).length;
+    const score = correctPairs;
+    const pct = Math.round((score / total) * 100);
+    const current = { pct, time: doneAtSeconds, correct: score, total };
+    setBestStats((prev) => {
+      let next = current;
+      if (prev) {
+        if (prev.pct > current.pct || (prev.pct === current.pct && prev.time <= current.time)) {
+          next = prev;
+        }
+      }
+      try {
+        const key = `study-game-best-match-${quizId}`;
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, [complete, total, doneAtSeconds, mistakesByPair, pairs, quizId]);
+
   if (pairs.length < 3) {
     return (
       <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
@@ -120,8 +176,17 @@ export function MatchGameClient({
 
   if (complete) {
     const mistakes = Object.values(mistakesByPair).reduce((a, b) => a + b, 0);
-    const score = Math.max(0, total - mistakes);
+    const correctPairs = pairs.filter((p) => (mistakesByPair[p.id] ?? 0) === 0).length;
+    const score = correctPairs;
     const pct = Math.round((score / total) * 100);
+
+    const pairStats = [...pairs]
+      .map((p, index) => ({
+        pair: p,
+        index,
+        mistakes: mistakesByPair[p.id] ?? 0,
+      }))
+      .sort((a, b) => b.mistakes - a.mistakes);
 
     return (
       <div className="space-y-6">
@@ -132,14 +197,60 @@ export function MatchGameClient({
             <p className="text-4xl font-bold text-gray-800">
               {score} <span className="text-2xl font-normal text-gray-500">/ {total}</span>
             </p>
-            <p className="mt-1 text-lg text-gray-600">{pct}% accuracy</p>
+            <p className="mt-1 text-lg text-gray-600">{pct}% correct matches</p>
             {typeof doneAtSeconds === "number" && (
               <p className="mt-2 flex items-center justify-center gap-1.5 text-gray-500">
                 <Clock className="h-4 w-4" />
-                {formatTime(doneAtSeconds)}
+                {formatTime(doneAtSeconds)} total
               </p>
             )}
           </div>
+
+          {pairStats.length > 0 && (
+          <div className="mt-6 border-t border-pastel-sage/30 pt-4 space-y-3">
+              <p className="text-sm font-medium text-gray-700">How each match went</p>
+              <div className="space-y-2">
+                {pairStats.map(({ pair, index, mistakes }) => {
+                  const good = mistakes === 0;
+                  const bad = mistakes > 0;
+                  return (
+                    <div
+                      key={pair.id}
+                      className={`rounded-xl px-3 py-2 text-xs sm:text-sm ${
+                        bad
+                          ? "bg-red-50 border border-red-200 text-red-800"
+                          : "bg-green-50 border border-green-200 text-green-800"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-1">
+                        <span className="font-semibold">
+                          Q{index + 1}: {truncate(pair.left, 80)}
+                        </span>
+                        <span className="text-[11px] font-medium">
+                          {bad ? `${mistakes} mistake${mistakes === 1 ? "" : "s"}` : "0 mistakes"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] sm:text-xs opacity-90">
+                        Answer: {truncate(pair.right, 80)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {bestStats && (
+            <p className="mt-3 text-xs text-gray-500 text-center">
+              Best so far for Match on this quiz:{" "}
+              <span className="font-medium">{bestStats.pct}%</span> in {formatTime(bestStats.time)} (
+              {bestStats.correct}/{bestStats.total})
+            </p>
+          )}
+
+          <p className="mt-4 text-center text-xs text-gray-400">
+            Red rows are matches you struggled with; green rows are strong knowledge.
+          </p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
@@ -179,9 +290,18 @@ export function MatchGameClient({
             Tap one prompt on the left, then its matching answer on the right.
           </p>
         </div>
-        <Link href={`/play/${quizId}`} className="text-sm text-gray-600 hover:text-gray-800 hover:underline">
-          Switch to Quiz
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/play"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800 hover:underline"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Play
+          </Link>
+          <Link href={`/play/${quizId}`} className="text-sm text-gray-600 hover:text-gray-800 hover:underline">
+            Switch to Quiz
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

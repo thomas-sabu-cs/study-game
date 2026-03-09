@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   const subjects = await getSubjects();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/20 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl">
         <header className="mb-8">
           <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">

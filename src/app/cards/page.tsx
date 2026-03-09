@@ -1,8 +1,9 @@
-import { Sparkles, StickyNote, Plus } from "lucide-react";
+import { Sparkles, StickyNote, Plus, Gamepad2 } from "lucide-react";
 import { getFlashcards, getNotesForFlashcards } from "./actions";
 import { ManualCardForm } from "./ManualCardForm";
 import { GenerateFromNoteForm } from "./GenerateFromNoteForm";
 import { FlashcardList } from "./FlashcardList";
+import { FlashcardGameClient } from "./FlashcardGameClient";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,7 @@ export default async function CardsPage() {
   const [cards, notes] = await Promise.all([getFlashcards(), getNotesForFlashcards()]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
           <StickyNote className="h-8 w-8 text-pastel-leaf" />
@@ -38,9 +39,19 @@ export default async function CardsPage() {
             <GenerateFromNoteForm notes={notes} />
           </section>
 
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm">
-            <h2 className="mb-3 font-semibold text-gray-800">Your cards</h2>
+          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm space-y-4">
+            <h2 className="mb-1 font-semibold text-gray-800">Your cards</h2>
             <FlashcardList cards={cards} />
+            <div className="mt-4 border-t border-pastel-sage/30 pt-4">
+              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
+                <Gamepad2 className="h-4 w-4 text-pastel-leaf" />
+                Play flip game
+              </h3>
+              <p className="mb-3 text-xs text-gray-600">
+                Flip through your cards, mark what you know, and see your best accuracy and time.
+              </p>
+              <FlashcardGameClient cards={cards} />
+            </div>
           </section>
         </div>
       </div>

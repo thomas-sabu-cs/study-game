@@ -9,7 +9,7 @@ export default async function FlaggedPage() {
   const items = await getFlaggedQuestions();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/play"

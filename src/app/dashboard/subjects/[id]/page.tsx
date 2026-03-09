@@ -32,7 +32,7 @@ export default async function SubjectPage({
   const color = subject.color ?? "#a5d6a7";
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/20 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/dashboard"

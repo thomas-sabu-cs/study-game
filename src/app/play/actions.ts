@@ -13,6 +13,9 @@ export interface QuizListItem {
   id: string;
   created_at: string;
   name: string | null;
+  times_played?: number;
+  best_accuracy_pct?: number;
+  best_time_seconds?: number;
 }
 
 export async function getQuizzes(): Promise<QuizListItem[]> {
@@ -20,15 +23,155 @@ export async function getQuizzes(): Promise<QuizListItem[]> {
   if (!userId) return [];
   try {
     const supabase = createAdminClient();
-    const { data } = await supabase
+    const { data: quizzes } = await supabase
       .from("quizzes")
       .select("id, created_at, name")
       .eq("user_id", userId)
+      .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(50);
-    return (data ?? []) as QuizListItem[];
+    if (!quizzes?.length) return [];
+
+    const quizIds = quizzes.map((q) => q.id);
+    const { data: attempts } = await supabase
+      .from("quiz_attempts")
+      .select("quiz_id, score, total, time_seconds")
+      .eq("user_id", userId)
+      .in("quiz_id", quizIds);
+
+    const statsByQuiz = new Map<
+      string,
+      { times_played: number; best_accuracy_pct: number; best_time_seconds: number }
+    >();
+    for (const a of attempts ?? []) {
+      const existing = statsByQuiz.get(a.quiz_id);
+      const accuracy = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0;
+      const time = a.time_seconds ?? 0;
+      if (!existing) {
+        statsByQuiz.set(a.quiz_id, {
+          times_played: 1,
+          best_accuracy_pct: accuracy,
+          best_time_seconds: time > 0 ? time : 0,
+        });
+      } else {
+        existing.times_played += 1;
+        existing.best_accuracy_pct = Math.max(existing.best_accuracy_pct, accuracy);
+        if (time > 0) {
+          existing.best_time_seconds =
+            existing.best_time_seconds > 0
+              ? Math.min(existing.best_time_seconds, time)
+              : time;
+        }
+      }
+    }
+
+    return quizzes.map((q) => {
+      const stats = statsByQuiz.get(q.id);
+      return {
+        ...q,
+        times_played: stats?.times_played ?? 0,
+        best_accuracy_pct: stats?.best_accuracy_pct,
+        best_time_seconds: stats?.best_time_seconds,
+      } as QuizListItem;
+    });
   } catch {
     return [];
+  }
+}
+
+export interface DeletedQuizItem {
+  id: string;
+  created_at: string;
+  name: string | null;
+  deleted_at: string;
+}
+
+export async function getRecentlyDeletedQuizzes(): Promise<DeletedQuizItem[]> {
+  const { userId } = await auth();
+  if (!userId) return [];
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("quizzes")
+      .select("id, created_at, name, deleted_at")
+      .eq("user_id", userId)
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false })
+      .limit(25);
+    return (data ?? []) as DeletedQuizItem[];
+  } catch {
+    return [];
+  }
+}
+
+/** Total seconds of quiz playtime for the current user (used for rainbow background unlock). */
+export async function getTotalPlaytimeSeconds(): Promise<number> {
+  const { userId } = await auth();
+  if (!userId) return 0;
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("quiz_attempts")
+      .select("time_seconds")
+      .eq("user_id", userId);
+    const total = (data ?? []).reduce((sum, row) => sum + (Number(row.time_seconds) || 0), 0);
+    return total;
+  } catch {
+    return 0;
+  }
+}
+
+export async function deleteQuiz(quizId: string): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not signed in" };
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("quizzes")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("id", quizId)
+      .eq("user_id", userId);
+    if (error) return { error: error.message };
+    revalidatePath("/play");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to delete" };
+  }
+}
+
+export async function restoreQuiz(quizId: string): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not signed in" };
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("quizzes")
+      .update({ deleted_at: null })
+      .eq("id", quizId)
+      .eq("user_id", userId);
+    if (error) return { error: error.message };
+    revalidatePath("/play");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to restore" };
+  }
+}
+
+export async function permanentlyDeleteQuiz(quizId: string): Promise<{ error?: string }> {
+  const { userId } = await auth();
+  if (!userId) return { error: "Not signed in" };
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("quizzes")
+      .delete()
+      .eq("id", quizId)
+      .eq("user_id", userId);
+    if (error) return { error: error.message };
+    revalidatePath("/play");
+    return {};
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Failed to delete permanently" };
   }
 }
 

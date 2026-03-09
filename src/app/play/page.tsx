@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Gamepad2, BookOpen, Flag, List, Clock } from "lucide-react";
-import { getQuizzes, getRecentAttempts } from "./actions";
+import { getQuizzes, getRecentAttempts, getRecentlyDeletedQuizzes } from "./actions";
+import { getFlashcards } from "@/app/cards/actions";
 import { PlayTabs } from "./PlayTabs";
 
 export const dynamic = "force-dynamic";
@@ -8,15 +9,22 @@ export const dynamic = "force-dynamic";
 export default async function PlayPage() {
   let quizzes: Awaited<ReturnType<typeof getQuizzes>> = [];
   let recents: Awaited<ReturnType<typeof getRecentAttempts>> = [];
+  let recentlyDeleted: Awaited<ReturnType<typeof getRecentlyDeletedQuizzes>> = [];
+  let flashcards: Awaited<ReturnType<typeof getFlashcards>> = [];
   let loadError: string | null = null;
   try {
-    [quizzes, recents] = await Promise.all([getQuizzes(), getRecentAttempts()]);
+    [quizzes, recents, recentlyDeleted, flashcards] = await Promise.all([
+      getQuizzes(),
+      getRecentAttempts(),
+      getRecentlyDeletedQuizzes(),
+      getFlashcards(),
+    ]);
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Could not load play data.";
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
           <Gamepad2 className="h-8 w-8 text-pastel-leaf" />
@@ -44,6 +52,8 @@ export default async function PlayPage() {
         <PlayTabs
           quizzes={quizzes}
           recents={recents}
+          recentlyDeleted={recentlyDeleted}
+          flashcards={flashcards}
         />
       </div>
     </main>

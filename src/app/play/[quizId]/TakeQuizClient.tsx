@@ -6,6 +6,7 @@ import {
   Check,
   X,
   ArrowRight,
+  ArrowLeft,
   RotateCcw,
   Lightbulb,
   Flag,
@@ -65,6 +66,12 @@ export function TakeQuizClient({
   const [reportNote, setReportNote] = useState("");
   const [flagSuccess, setFlagSuccess] = useState<string | null>(null);
   const [finalAnswers, setFinalAnswers] = useState<boolean[] | null>(null);
+  const [bestStats, setBestStats] = useState<{
+    pct: number;
+    time: number;
+    correct: number;
+    total: number;
+  } | null>(null);
 
   const current = questions[index];
   const isLast = index === questions.length - 1;
@@ -74,6 +81,32 @@ export function TakeQuizClient({
   useEffect(() => {
     questionStartRef.current = Date.now();
   }, [index]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const key = `study-game-best-quiz-${quizId}`;
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as {
+        pct: number;
+        time: number;
+        correct: number;
+        total: number;
+      };
+      if (
+        parsed &&
+        typeof parsed.pct === "number" &&
+        typeof parsed.time === "number" &&
+        typeof parsed.correct === "number" &&
+        typeof parsed.total === "number"
+      ) {
+        setBestStats(parsed);
+      }
+    } catch {
+      // ignore
+    }
+  }, [quizId]);
 
   if (questions.length === 0) {
     return (
@@ -150,6 +183,7 @@ export function TakeQuizClient({
       setFinalAnswers(allAnswers);
       setTotalTimeSeconds(totalSec);
       setCompletedQuestionTimes(allTimes);
+      // Save attempt to Supabase
       saveQuizAttempt(
         quizId,
         finalScore,
@@ -158,6 +192,26 @@ export function TakeQuizClient({
         totalSec,
         allTimes.map((s) => Math.round(s))
       );
+      // Update local best stats for this quiz (higher pct, or same pct but faster time)
+      const pct = Math.round((finalScore / questions.length) * 100);
+      const current = { pct, time: totalSec, correct: finalScore, total: questions.length };
+      setBestStats((prev) => {
+        let next = current;
+        if (prev) {
+          if (prev.pct > current.pct || (prev.pct === current.pct && prev.time <= current.time)) {
+            next = prev;
+          }
+        }
+        if (typeof window !== "undefined") {
+          try {
+            const key = `study-game-best-quiz-${quizId}`;
+            window.localStorage.setItem(key, JSON.stringify(next));
+          } catch {
+            // ignore
+          }
+        }
+        return next;
+      });
     }
     setIndex((i) => i + 1);
     setSelectedOptionId(null);
@@ -206,6 +260,13 @@ export function TakeQuizClient({
                 ))}
               </div>
             </div>
+          )}
+
+          {bestStats && (
+            <p className="mt-3 text-xs text-gray-500 text-center">
+              Best so far on this quiz: <span className="font-medium">{bestStats.pct}%</span> in{" "}
+              {formatTime(bestStats.time)} ({bestStats.correct}/{bestStats.total})
+            </p>
           )}
 
           {finalAnswers && (
@@ -261,6 +322,15 @@ export function TakeQuizClient({
 
   return (
     <div className="space-y-5">
+      <div className="flex justify-end">
+        <Link
+          href="/play"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-800 hover:underline"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Play
+        </Link>
+      </div>
       <div className="space-y-1">
         <div className="flex justify-between text-sm text-gray-500">
           <span>Question {index + 1} of {questions.length}</span>

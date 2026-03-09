@@ -16,3 +16,38 @@
 body {
   @apply bg-pastel-cream text-gray-800 antialiased;
 }
+
+@keyframes float-drift-slow {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(4px, -5px);
+  }
+  66% {
+    transform: translate(-3px, 3px);
+  }
+}
+
+@keyframes float-drift-slower {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-4px, 4px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-drift-slow 8s ease-in-out infinite;
+}
+
+.animate-float-slower {
+  animation: float-drift-slower 12s ease-in-out infinite;
+}
+
+.animate-float-slow-delay {
+  animation: float-drift-slow 10s ease-in-out 2s infinite;
+}
