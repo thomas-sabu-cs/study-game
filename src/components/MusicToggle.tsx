@@ -7,6 +7,7 @@ const STORAGE_KEY = "study-game-music-enabled";
 // Default to first playlist track in public/audio/background
 const DEFAULT_SRC = "/audio/background/Day-Off.mp3";
 const TRACKS_META_KEY = "study-game-music-tracks";
+const GLOBAL_AUDIO_KEY = "__study_buddy_bg_audio__";
 
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
@@ -31,7 +32,8 @@ export function MusicToggle() {
   function getOrCreateAudio(overrideSrc?: string): HTMLAudioElement {
     // Always resolve the desired src from localStorage (or fallback/override).
     let src = overrideSrc ?? DEFAULT_SRC;
-    if (!overrideSrc) {
+
+    if (typeof window !== "undefined" && !overrideSrc) {
       try {
         const storedSrc = window.localStorage.getItem("study-game-music-src");
         // Only trust values that point at the new background folder.
@@ -45,21 +47,34 @@ export function MusicToggle() {
         // ignore
       }
     }
-    const existing = audioRef.current;
-    if (existing) {
-      // If the source has changed (e.g. new first track in queue), update it.
-      const currentSrc = existing.src || "";
-      if (!currentSrc.endsWith(src)) {
-        existing.pause();
-        existing.src = src;
-        existing.currentTime = 0;
+
+    // Use a global singleton so we never have more than one background audio element.
+    let audio: HTMLAudioElement | null = null;
+
+    if (typeof window !== "undefined") {
+      const w = window as any;
+      audio = (w[GLOBAL_AUDIO_KEY] as HTMLAudioElement | undefined) ?? null;
+      if (!audio) {
+        audio = new Audio(src);
+        audio.preload = "auto";
+        audio.loop = true;
+        w[GLOBAL_AUDIO_KEY] = audio;
+      } else {
+        const currentSrc = audio.src || "";
+        if (!currentSrc.endsWith(src)) {
+          audio.pause();
+          audio.src = src;
+          audio.currentTime = 0;
+        }
       }
-      existing.volume = volume / 100;
-      return existing;
+    } else if (audioRef.current) {
+      audio = audioRef.current;
+    } else {
+      audio = new Audio(src);
+      audio.preload = "auto";
+      audio.loop = true;
     }
-    const audio = new Audio(src);
-    audio.loop = true;
-    audio.preload = "auto";
+
     audio.volume = volume / 100;
     audioRef.current = audio;
     return audio;
