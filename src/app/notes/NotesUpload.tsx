@@ -31,6 +31,16 @@ export function NotesUpload({ subjectId: _subjectId }: { subjectId: string }) {
     formData.set("file", file);
     try {
       const result = await uploadFileForNotes(formData);
+      if (result?.duplicateFileId) {
+        try {
+          window.localStorage.setItem("study-game-highlight-notes-file", String(result.duplicateFileId));
+        } catch {
+          // ignore
+        }
+        setError(result.error || "That file is already uploaded (highlighted below).");
+        router.refresh();
+        return;
+      }
       if (result?.error) {
         setError(result.error);
         return;

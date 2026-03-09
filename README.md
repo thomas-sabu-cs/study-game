@@ -21,9 +21,11 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Use “Open your Locker” to go to the dashboard (auth and full features will be wired in the next steps).
+Open [http://localhost:3000](http://localhost:3000). Use “Open your Locker” to go to the dashboard.
 
-**Database:** In Supabase (Dashboard → SQL Editor), run the migrations in order: `001_subjects.sql`, `002_study_files_and_quizzes.sql`, then `003_quiz_attempts_and_flags.sql`. Optionally run `004_multi_file_quiz_and_timing.sql` to add time tracking and multi-file metadata. **Storage:** Create a bucket named `study-files` in Supabase → Storage → New bucket (private is fine).
+**Database:** In Supabase (Dashboard → SQL Editor), run all SQL files in `supabase/migrations` in order (`001_*.sql`, `002_*.sql`, …, `009_*.sql`). These create subjects, study files, quizzes, attempts, notes, flashcards, soft-delete for quizzes, and dedupe metadata.
+
+**Storage:** Create a bucket named `study-files` in Supabase → Storage → New bucket (private is fine).
 
 ### 3. Folder structure
 
@@ -37,13 +39,32 @@ See **[FOLDER_STRUCTURE.md](./FOLDER_STRUCTURE.md)** for the full layout and imp
 - **AI**: Google Gemini 1.5 Flash (`@google/generative-ai`)
 - **Icons**: lucide-react
 
-## Implementation status
+## Features
 
-| Step | Status |
-|------|--------|
-| 1. Scaffold + Tailwind | ✅ Done |
-| 2. Supabase (DB + Storage) | Next |
-| 3. Auth | Pending |
-| 4. File upload + text extraction | Pending |
-| 5. Gemini quiz generation | Pending |
-| 6. Quiz UI (scoring, streak, theme) | Pending |
+- **Locker dashboard**
+  - Upload PDF / TXT / images (JPEG/PNG/WebP) per subject
+  - Text extraction (PDF, plain text, or via Gemini for images)
+  - Duplicate uploads are blocked per subject (by file hash); when you try to re-upload the same file, the existing one is auto-scrolled to and highlighted in the list
+  - Generate AI quizzes from one or more files; quizzes show up under **Play**
+
+- **Notes**
+  - Dedicated “Notes” subject
+  - Upload files once and reuse them to generate structured AI notes
+  - Duplicate detection + highlight works here as well
+
+- **Play**
+  - **Quiz** game: scoring, per-question timing, total time, attempts saved in `quiz_attempts`
+  - **Match** game: match prompts to correct answers based on the quiz
+  - **Flip**: flashcard flip game (from the Notecards page)
+  - Quiz list shows **times played**, **best accuracy**, and **best time**
+  - Quizzes can be **soft-deleted**; a “Recently deleted” tab lets you restore or permanently delete them
+
+- **Notecards**
+  - Create flashcards manually or generate from notes with Gemini
+  - Play the flip game from **Cards** or via the **Flip** option under **Play**
+
+- **Visuals & UX**
+  - Perlin-noise background with pastel green base and pink/white particles
+  - Global dynamic buttons (`btn-dynamic`) for soft hover/press animation
+  - Optional background music toggle in the top nav, using your own relaxing MP3 (`public/audio/relaxing.mp3` or `NEXT_PUBLIC_RELAXING_MP3_URL`)
+

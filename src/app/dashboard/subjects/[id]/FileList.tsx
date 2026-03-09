@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText, Sparkles, Loader2, Gamepad2 } from "lucide-react";
 import { generateQuiz } from "./actions";
@@ -18,6 +18,25 @@ export function FileList({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [quizName, setQuizName] = useState("");
   const [createdQuiz, setCreatedQuiz] = useState<{ name: string } | null>(null);
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const id = window.localStorage.getItem("study-game-highlight-file");
+      if (!id) return;
+      window.localStorage.removeItem("study-game-highlight-file");
+      setHighlightId(id);
+      // Let layout paint first, then scroll.
+      setTimeout(() => {
+        const el = document.getElementById(`study-file-${id}`);
+        el?.scrollIntoView({ block: "center", behavior: "smooth" });
+      }, 50);
+      // Clear highlight after a moment.
+      setTimeout(() => setHighlightId(null), 2200);
+    } catch {
+      // ignore
+    }
+  }, [files.length]);
 
   const toggle = (fileId: string) => {
     setSelected((prev) => {
@@ -70,7 +89,12 @@ export function FileList({
       {files.map((file) => (
         <li
           key={file.id}
-          className="flex flex-wrap items-center gap-2 rounded-xl border border-pastel-sage/50 bg-white/70 px-4 py-3"
+          id={`study-file-${file.id}`}
+          className={`flex flex-wrap items-center gap-2 rounded-xl border bg-white/70 px-4 py-3 transition ${
+            highlightId === file.id
+              ? "border-pastel-blossom ring-2 ring-pastel-blossom/60 bg-pastel-blossom/10"
+              : "border-pastel-sage/50"
+          }`}
         >
           <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
             <input

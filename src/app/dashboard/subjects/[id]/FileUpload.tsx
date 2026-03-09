@@ -32,6 +32,16 @@ export function FileUpload({ subjectId }: { subjectId: string }) {
     formData.set("subjectId", subjectId);
     try {
       const result = await uploadFile(formData);
+      if (result && typeof result === "object" && "duplicateFileId" in result && result.duplicateFileId) {
+        try {
+          window.localStorage.setItem("study-game-highlight-file", String(result.duplicateFileId));
+        } catch {
+          // ignore
+        }
+        setError(result.error || "That file is already uploaded (highlighted below).");
+        router.refresh();
+        return;
+      }
       if (result && typeof result === "object" && "error" in result && result.error) {
         setError(result.error);
         return;

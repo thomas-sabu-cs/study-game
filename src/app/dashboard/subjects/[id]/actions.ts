@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { generateQuizQuestions } from "@/lib/ai/gemini";
 import { extractTextFromBuffer } from "@/lib/extract/text";
 import type { StudyFile } from "@/types";
+import crypto from "crypto";
 
 const BUCKET = "study-files";
 // Keep under Vercel's 4.5 MB serverless request limit; 4 MB leaves headroom
@@ -18,7 +19,9 @@ const ALLOWED_MIMES = [
   "image/webp",
 ];
 
-export async function uploadFile(formData: FormData): Promise<{ error?: string }> {
+export async function uploadFile(
+  formData: FormData
+): Promise<{ error?: string; duplicateFileId?: string }> {
   try {
     const { userId } = await auth();
     if (!userId) return { error: "Not signed in" };
@@ -50,6 +53,19 @@ export async function uploadFile(formData: FormData): Promise<{ error?: string }
     if (!subject) return { error: "Subject not found" };
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
+
+    // If this exact file was already uploaded to this subject, don't re-upload.
+    const { data: existing } = await supabase
+      .from("study_files")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("subject_id", subjectId)
+      .eq("file_hash", fileHash)
+      .limit(1)
+      .maybeSingle();
+    if (existing?.id) return { duplicateFileId: existing.id, error: "That file is already uploaded." };
+
     const safeName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200);
     const storagePath = `${userId}/${subjectId}/${crypto.randomUUID()}_${safeName}`;
 
@@ -84,6 +100,8 @@ export async function uploadFile(formData: FormData): Promise<{ error?: string }
       name: file.name || safeName,
       storage_path: storagePath,
       extracted_text: text || null,
+      file_hash: fileHash,
+      file_size: file.size,
     });
 
     if (insertError) {

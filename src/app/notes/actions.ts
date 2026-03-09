@@ -9,7 +9,8 @@ import type { StudyFile } from "@/types";
 
 const BUCKET = "study-files";
 const NOTES_SUBJECT_NAME = "Notes";
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+// Keep under Vercel's 4.5 MB serverless request limit; 4 MB leaves headroom
+const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB
 const ALLOWED_MIMES = [
   "application/pdf",
   "text/plain",
@@ -70,7 +71,9 @@ export async function getNotesFiles(subjectId: string): Promise<StudyFile[]> {
   }
 }
 
-export async function uploadFileForNotes(formData: FormData): Promise<{ error?: string }> {
+export async function uploadFileForNotes(
+  formData: FormData
+): Promise<{ error?: string; duplicateFileId?: string }> {
   const { userId } = await auth();
   if (!userId) return { error: "Not signed in" };
 
@@ -79,7 +82,7 @@ export async function uploadFileForNotes(formData: FormData): Promise<{ error?: 
 
   const file = formData.get("file") as File | null;
   if (!file) return { error: "Choose a file first." };
-  if (file.size > MAX_FILE_BYTES) return { error: "File too large. Maximum size is 10 MB." };
+  if (file.size > MAX_FILE_BYTES) return { error: "File too large. Maximum size is 4 MB (use a smaller PDF or split it)." };
 
   let mime = file.type || "application/octet-stream";
   const ext = (file.name || "").toLowerCase();
@@ -96,6 +99,19 @@ export async function uploadFileForNotes(formData: FormData): Promise<{ error?: 
   try {
     const supabase = createAdminClient();
     const buffer = Buffer.from(await file.arrayBuffer());
+    const { createHash } = await import("crypto");
+    const fileHash = createHash("sha256").update(buffer).digest("hex");
+
+    const { data: existing } = await supabase
+      .from("study_files")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("subject_id", subject.id)
+      .eq("file_hash", fileHash)
+      .limit(1)
+      .maybeSingle();
+    if (existing?.id) return { error: "That file is already uploaded.", duplicateFileId: existing.id } as any;
+
     const safeName = (file.name || "file").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 200);
     const storagePath = `${userId}/${subject.id}/${crypto.randomUUID()}_${safeName}`;
 
@@ -119,6 +135,8 @@ export async function uploadFileForNotes(formData: FormData): Promise<{ error?: 
       name: file.name || safeName,
       storage_path: storagePath,
       extracted_text: text || null,
+      file_hash: fileHash,
+      file_size: file.size,
     });
 
     if (insertError) return { error: insertError.message };
