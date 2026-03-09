@@ -23,14 +23,14 @@ export default async function DashboardPage() {
         </header>
 
         <section className="mb-8">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-300">
             Add subject
           </h2>
           <AddSubjectForm />
         </section>
 
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-300">
             Subjects
           </h2>
           {subjects.length === 0 ? (

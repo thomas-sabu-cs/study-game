@@ -121,6 +121,12 @@ export function MusicToggle() {
     try {
       await audio.play();
       setIsPlaying(true);
+      if (typeof window !== "undefined") {
+        const src =
+          window.localStorage.getItem("study-game-music-src") ?? DEFAULT_SRC;
+        setCurrentTitle(pickTitleForSrc(src));
+        broadcastSrc(src);
+      }
     } catch {
       // Autoplay might still be blocked; user can tap again.
     }
@@ -282,6 +288,15 @@ export function MusicToggle() {
         <span className="max-w-[10rem] truncate text-[11px] font-medium text-gray-700">
           {currentTitle ?? "Study Buddy mix"}
         </span>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={volume}
+          onChange={handleVolumeChange}
+          aria-label="Music volume"
+          className="h-1 w-24 cursor-pointer accent-pastel-sage"
+        />
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -322,15 +337,6 @@ export function MusicToggle() {
           </button>
         </div>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={volume}
-        onChange={handleVolumeChange}
-        aria-label="Music volume"
-        className="h-1 w-20 cursor-pointer accent-pastel-sage"
-      />
     </div>
   );
 }

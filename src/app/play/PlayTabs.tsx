@@ -61,15 +61,15 @@ export function PlayTabs({
     <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 shadow-sm overflow-hidden">
       {/* Game type: Quiz (active), Match / Notecards (coming soon) */}
       <div className="border-b border-pastel-sage/40 px-2 pt-2">
-        <p className="text-xs font-medium text-gray-500 mb-2 px-2">Game type</p>
+        <p className="text-xs font-medium mb-2 px-2">Game type</p>
         <div className="flex gap-1">
           <button
             type="button"
             onClick={() => setGameType("quiz")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium transition ${
               gameType === "quiz"
-                ? "bg-pastel-sage/70 text-gray-800"
-                : "text-gray-600 hover:bg-pastel-mint/30"
+                ? "bg-pastel-sage/80 text-gray-900"
+                : "text-gray-800 hover:bg-pastel-mint/30"
             }`}
           >
             <HelpCircle className="h-4 w-4" />
@@ -80,8 +80,8 @@ export function PlayTabs({
             onClick={() => setGameType("match")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium transition ${
               gameType === "match"
-                ? "bg-pastel-sage/70 text-gray-800"
-                : "text-gray-600 hover:bg-pastel-mint/30"
+                ? "bg-pastel-sage/80 text-gray-900"
+                : "text-gray-800 hover:bg-pastel-mint/30"
             }`}
           >
             <Layers className="h-4 w-4" />
@@ -92,8 +92,8 @@ export function PlayTabs({
             onClick={() => setGameType("flashcards")}
             className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium transition ${
               gameType === "flashcards"
-                ? "bg-pastel-sage/70 text-gray-800"
-                : "text-gray-600 hover:bg-pastel-mint/30"
+                ? "bg-pastel-sage/80 text-gray-900"
+                : "text-gray-800 hover:bg-pastel-mint/30"
             }`}
           >
             <Library className="h-4 w-4" />

@@ -16,7 +16,7 @@ export default async function ProfilePage({ searchParams }: any) {
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl space-y-6 rounded-2xl border border-pastel-sage/50 bg-white/70 p-6 shadow-sm">
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h1 className="text-2xl font-bold text-gray-800">Profile & settings</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Profile & Settings</h1>
           {from && (
             <Link
               href={from}
@@ -55,7 +55,7 @@ export default async function ProfilePage({ searchParams }: any) {
                   className="h-4 w-4 text-pastel-leaf"
                 />
                 <span>
-                  Dynamic **starfield** background{" "}
+                  Dark **starfield** background{" "}
                   <span className="text-xs text-gray-500">(dark, moving stars)</span>
                 </span>
               </label>

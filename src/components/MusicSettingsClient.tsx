@@ -296,13 +296,13 @@ export function MusicSettingsClient() {
                 <div className="flex-1 min-w-0">
                   <p className="truncate font-medium text-gray-800">{t.title}</p>
                   <p className="text-xs text-gray-500">{t.artist}</p>
+                  {t.src === currentSrc && (
+                    <span className="mt-0.5 inline-flex rounded-full bg-pastel-mint/60 px-2 py-0.5 text-[10px] font-semibold text-gray-800">
+                      Now playing
+                    </span>
+                  )}
                 </div>
                 <span className="text-xs font-mono text-gray-500">{t.duration}</span>
-                {t.src === currentSrc && (
-                  <span className="ml-1 rounded-full bg-pastel-mint/60 px-2 py-0.5 text-[10px] font-semibold text-gray-800">
-                    Now playing
-                  </span>
-                )}
                 <button
                   type="button"
                   onClick={() => moveToDisliked(t.id)}
