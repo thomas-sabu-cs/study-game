@@ -6,11 +6,7 @@ import { MusicSettingsClient } from "@/components/MusicSettingsClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage({
-  searchParams,
-}: {
-  searchParams?: { from?: string };
-}) {
+export default async function ProfilePage({ searchParams }: any) {
   await requireAuth();
   const settings = await getUserSettings();
   const mode = settings?.background_mode ?? "stars";
