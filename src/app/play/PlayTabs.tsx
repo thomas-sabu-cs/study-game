@@ -305,29 +305,49 @@ export function PlayTabs({
           <>
             {recents.length === 0 ? (
               <p className="text-gray-500 py-4">
-                No attempts yet. Take a quiz to see your scores and times here.
+                No attempts yet. Play a game to see your recent history here.
               </p>
             ) : (
               <ul className="space-y-2">
-                {recents.map((a) => (
-                  <li key={a.id}>
-                    <Link
-                      href={`/play/${a.quiz_id}`}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3 text-sm hover:bg-pastel-mint/30 transition"
-                    >
-                      <span className="font-medium text-gray-800">
-                        {a.score} / {a.total}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-gray-500">
-                        <Clock className="h-3.5 w-3.5" />
-                        {formatTime(a.time_seconds || 0)}
-                      </span>
-                      <span className="w-full text-xs text-gray-400">
-                        {new Date(a.created_at).toLocaleString()}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
+                {recents
+                  .filter((a) => {
+                    const t = a.game_type ?? "quiz";
+                    if (gameType === "quiz") return t === "quiz";
+                    if (gameType === "match") return t === "match";
+                    if (gameType === "flashcards") return t === "flip";
+                    return true;
+                  })
+                  .map((a) => {
+                    const t = a.game_type ?? "quiz";
+                    const href =
+                      t === "match"
+                        ? `/play/match/${a.quiz_id}`
+                        : `/play/${a.quiz_id}`;
+                    const label =
+                      t === "match" ? "Match" : t === "flip" ? "Flip" : "Quiz";
+                    return (
+                      <li key={a.id}>
+                        <Link
+                          href={href}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3 text-sm hover:bg-pastel-mint/30 transition"
+                        >
+                          <span className="inline-flex items-center gap-2 font-medium text-gray-800">
+                            <span className="inline-flex items-center rounded-full border border-pastel-sage/70 bg-pastel-mint/40 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-gray-700">
+                              {label}
+                            </span>
+                            {a.score} / {a.total}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-gray-500">
+                            <Clock className="h-3.5 w-3.5" />
+                            {formatTime(a.time_seconds || 0)}
+                          </span>
+                          <span className="w-full text-xs text-gray-400">
+                            {new Date(a.created_at).toLocaleString()}
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
               </ul>
             )}
           </>

@@ -15,12 +15,7 @@ import {
   Bookmark,
   Clock,
 } from "lucide-react";
-import {
-  explainQuestion,
-  flagQuestion,
-  reportQuestion,
-  saveQuizAttempt,
-} from "../actions";
+import { explainQuestion, flagQuestion, reportQuestion, saveQuizAttempt } from "../actions";
 import { ResultsBreakdown } from "./ResultsBreakdown";
 import type { QuizQuestion } from "@/types";
 
@@ -183,14 +178,15 @@ export function TakeQuizClient({
       setFinalAnswers(allAnswers);
       setTotalTimeSeconds(totalSec);
       setCompletedQuestionTimes(allTimes);
-      // Save attempt to Supabase
+      // Save attempt to Supabase (game_type 'quiz')
       saveQuizAttempt(
         quizId,
         finalScore,
         questions.length,
         allAnswers.map((correct, i) => ({ questionIndex: i, correct })),
         totalSec,
-        allTimes.map((s) => Math.round(s))
+        allTimes.map((s) => Math.round(s)),
+        "quiz"
       );
       // Update local best stats for this quiz (higher pct, or same pct but faster time)
       const pct = Math.round((finalScore / questions.length) * 100);

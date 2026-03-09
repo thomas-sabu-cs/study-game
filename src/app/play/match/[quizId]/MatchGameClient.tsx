@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Clock, RotateCcw, ArrowLeft } from "lucide-react";
 import type { QuizQuestion } from "@/types";
+import { saveQuizAttempt } from "../actions";
 
 type Pair = {
   id: string;
@@ -158,6 +159,20 @@ export function MatchGameClient({
       }
       return next;
     });
+
+    // Persist match attempts as well, using game_type 'match'
+    saveQuizAttempt(
+      quizId,
+      score,
+      total,
+      pairs.map((p) => ({
+        questionIndex: 0,
+        correct: (mistakesByPair[p.id] ?? 0) === 0,
+      })),
+      doneAtSeconds,
+      undefined,
+      "match"
+    );
   }, [complete, total, doneAtSeconds, mistakesByPair, pairs, quizId]);
 
   if (pairs.length < 3) {

@@ -181,7 +181,8 @@ export async function saveQuizAttempt(
   total: number,
   answers: { questionIndex: number; correct: boolean }[],
   timeSeconds?: number,
-  questionSeconds?: number[]
+  questionSeconds?: number[],
+  gameType: "quiz" | "match" | "flip" = "quiz"
 ) {
   const { userId } = await auth();
   if (!userId) return;
@@ -195,6 +196,7 @@ export async function saveQuizAttempt(
       answers,
       time_seconds: timeSeconds ?? 0,
       question_seconds: questionSeconds ?? [],
+      game_type: gameType,
     });
     revalidatePath("/play");
   } catch (e) {
@@ -210,6 +212,7 @@ export interface RecentAttempt {
   time_seconds: number;
   created_at: string;
   quiz_created_at: string;
+  game_type: "quiz" | "match" | "flip" | null;
 }
 
 export async function getRecentAttempts(): Promise<RecentAttempt[]> {
@@ -219,7 +222,7 @@ export async function getRecentAttempts(): Promise<RecentAttempt[]> {
     const supabase = createAdminClient();
     const { data: attempts } = await supabase
       .from("quiz_attempts")
-      .select("id, quiz_id, score, total, time_seconds, created_at")
+      .select("id, quiz_id, score, total, time_seconds, created_at, game_type")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(25);
@@ -234,6 +237,7 @@ export async function getRecentAttempts(): Promise<RecentAttempt[]> {
 
     return attempts.map((a) => ({
       ...a,
+      game_type: (a as any).game_type ?? "quiz",
       quiz_created_at: quizMap.get(a.quiz_id)?.created_at ?? a.created_at,
     })) as RecentAttempt[];
   } catch {
