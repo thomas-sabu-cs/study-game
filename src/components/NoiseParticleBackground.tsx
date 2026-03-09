@@ -112,15 +112,17 @@ export function NoiseParticleBackground({ rainbowUnlocked }: { rainbowUnlocked: 
 
     let firstFrame = true;
     function draw() {
+      const context = canvasRef.current?.getContext("2d");
+      if (!context) return;
       if (firstFrame) {
-        ctx.fillStyle = `rgb(${BG_R}, ${BG_G}, ${BG_B})`;
-        ctx.fillRect(0, 0, width, height);
+        context.fillStyle = `rgb(${BG_R}, ${BG_G}, ${BG_B})`;
+        context.fillRect(0, 0, width, height);
         firstFrame = false;
       }
-      ctx.fillStyle = `rgba(${BG_R}, ${BG_G}, ${BG_B}, ${TRAIL_ALPHA})`;
-      ctx.fillRect(0, 0, width, height);
+      context.fillStyle = `rgba(${BG_R}, ${BG_G}, ${BG_B}, ${TRAIL_ALPHA})`;
+      context.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = particleColorRef.current;
+      context.fillStyle = particleColorRef.current;
 
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
@@ -147,7 +149,7 @@ export function NoiseParticleBackground({ rainbowUnlocked }: { rainbowUnlocked: 
           p.y = Math.random() * height;
         }
 
-        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 1);
+        context.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 1);
       }
 
       rafId = requestAnimationFrame(draw);
