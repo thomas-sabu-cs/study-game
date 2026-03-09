@@ -128,28 +128,40 @@ export function AddSubjectForm() {
         {savedColors.length > 0 && (
           <div className="mt-2 space-y-1">
             <p className="text-[11px] text-gray-500">Saved colors</p>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               {savedColors.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => {
-                    setSelectedColor(value);
-                    setCustomColor(value);
-                    setShowAdvanced(false);
-                  }}
-                  className="cursor-pointer"
-                  title={value}
-                >
-                  <span
-                    className={`block h-7 w-7 rounded-full border-2 transition hover:scale-110 ${
-                      selectedColor === value
-                        ? "border-gray-700 ring-2 ring-pastel-leaf"
-                        : "border-gray-300"
-                    }`}
-                    style={{ backgroundColor: value }}
-                  />
-                </button>
+                <div key={value} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedColor(value);
+                      setCustomColor(value);
+                      setShowAdvanced(false);
+                    }}
+                    className="cursor-pointer"
+                    title={value}
+                  >
+                    <span
+                      className={`block h-7 w-7 rounded-full border-2 transition hover:scale-110 ${
+                        selectedColor === value
+                          ? "border-gray-700 ring-2 ring-pastel-leaf"
+                          : "border-gray-300"
+                      }`}
+                      style={{ backgroundColor: value }}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Remove saved color"
+                    onClick={() => {
+                      const next = savedColors.filter((c) => c !== value);
+                      persistSavedColors(next);
+                    }}
+                    className="text-[10px] text-gray-400 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </div>
               ))}
             </div>
           </div>
