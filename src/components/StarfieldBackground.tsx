@@ -70,11 +70,13 @@ export function StarfieldBackground() {
     }
 
     function resize() {
+      const el = canvasRef.current;
+      if (!el) return;
       scale = window.devicePixelRatio || 1;
       width = window.innerWidth * scale;
       height = window.innerHeight * scale;
-      canvas.width = width;
-      canvas.height = height;
+      el.width = width;
+      el.height = height;
       if (!stars.length) {
         stars = [];
         for (let i = 0; i < STAR_COUNT; i++) {

@@ -38,6 +38,7 @@ export function MusicToggle() {
       window.removeEventListener("pointerdown", onFirstGesture);
       window.removeEventListener("keydown", onFirstGesture);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
   function getOrCreateAudio(): HTMLAudioElement {
