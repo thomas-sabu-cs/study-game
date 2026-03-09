@@ -9,6 +9,17 @@ const DEFAULT_SRC = "/audio/background/Day-Off.mp3";
 const TRACKS_META_KEY = "study-game-music-tracks";
 const GLOBAL_AUDIO_KEY = "__study_buddy_bg_audio__";
 
+// Fallback track list so next/prev work even before visiting Profile settings.
+const FALLBACK_TRACKS: { id: string; src: string; title: string }[] = [
+  { id: "day_off", src: "/audio/background/Day-Off.mp3", title: "Day Off" },
+  { id: "late_at_night", src: "/audio/background/Late-at-Night.mp3", title: "Late at Night" },
+  { id: "magical_moments", src: "/audio/background/Magical-Moments.mp3", title: "Magical Moments" },
+  { id: "morning_routine", src: "/audio/background/Morning-Routine.mp3", title: "Morning Routine" },
+  { id: "storm_clouds", src: "/audio/background/Storm-Clouds.mp3", title: "Storm Clouds" },
+  { id: "sunset_drive", src: "/audio/background/Sunset-Drive.mp3", title: "Sunset Drive" },
+  { id: "vibin", src: "/audio/background/Vibin.mp3", title: "Vibin" },
+];
+
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
   const [volume, setVolume] = useState(35);
@@ -161,20 +172,24 @@ export function MusicToggle() {
   }
 
   function getTrackList(): { id: string; src: string; title?: string }[] {
+    if (typeof window === "undefined") {
+      return FALLBACK_TRACKS;
+    }
     try {
       const raw = window.localStorage.getItem(TRACKS_META_KEY);
-      if (!raw) return [];
+      if (!raw) return FALLBACK_TRACKS;
       const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) return [];
-      return parsed
+      if (!Array.isArray(parsed)) return FALLBACK_TRACKS;
+      const fromStorage = parsed
         .map((t: any) =>
           t && t.id && t.src
             ? { id: String(t.id), src: String(t.src), title: t.title as string | undefined }
             : null
         )
         .filter(Boolean) as { id: string; src: string; title?: string }[];
+      return fromStorage.length ? fromStorage : FALLBACK_TRACKS;
     } catch {
-      return [];
+      return FALLBACK_TRACKS;
     }
   }
 

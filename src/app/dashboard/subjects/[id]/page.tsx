@@ -36,7 +36,7 @@ export default async function SubjectPage({
       <div className="mx-auto max-w-2xl">
         <Link
           href="/dashboard"
-          className="mb-6 inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800"
+          className="mb-6 inline-flex items-center gap-1 text-sm hover:text-pastel-leaf"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Locker
@@ -52,8 +52,8 @@ export default async function SubjectPage({
             </span>
           </span>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">{subject.name}</h1>
-            <p className="text-gray-600">Add files and generate quizzes from your notes.</p>
+            <h1 className="text-2xl font-bold">{subject.name}</h1>
+            <p>Add files and generate quizzes from your notes.</p>
           </div>
         </header>
 
