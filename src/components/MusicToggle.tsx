@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 const STORAGE_KEY = "study-game-music-enabled";
-const DEFAULT_SRC = "/audio/relaxing.mp3";
+// Default to your added file: public/audio/background_music.mp3
+const DEFAULT_SRC = "/audio/background_music.mp3";
 
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
