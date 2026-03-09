@@ -64,7 +64,7 @@ export default async function SubjectPage({
               Upload a file
             </h2>
             <p className="mb-4 text-sm text-gray-600">
-              PDF, TXT, or JPEG/PNG/WebP (max 10 MB). We’ll extract text (or from images via AI) so you can generate a quiz.
+              PDF, TXT, or JPEG/PNG/WebP (max 4 MB). We’ll extract text (or from images via AI) so you can generate a quiz.
             </p>
             <FileUpload subjectId={id} />
           </section>

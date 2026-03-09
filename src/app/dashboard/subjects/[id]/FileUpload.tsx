@@ -32,7 +32,7 @@ export function FileUpload({ subjectId }: { subjectId: string }) {
     formData.set("subjectId", subjectId);
     try {
       const result = await uploadFile(formData);
-      if (result?.error) {
+      if (result && typeof result === "object" && "error" in result && result.error) {
         setError(result.error);
         return;
       }
@@ -40,8 +40,8 @@ export function FileUpload({ subjectId }: { subjectId: string }) {
       input.value = "";
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
-        setError("Connection failed. Try a smaller file (e.g. under 2 MB), make sure the dev server is running, and try again.");
+      if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network") || msg.toLowerCase().includes("unexpected")) {
+        setError("Upload failed. Use a file under 4 MB and try again. If it still fails, check your connection.");
       } else {
         setError(msg || "Upload failed. Try again.");
       }

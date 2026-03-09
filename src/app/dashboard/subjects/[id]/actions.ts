@@ -8,7 +8,8 @@ import { extractTextFromBuffer } from "@/lib/extract/text";
 import type { StudyFile } from "@/types";
 
 const BUCKET = "study-files";
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+// Keep under Vercel's 4.5 MB serverless request limit; 4 MB leaves headroom
+const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB
 const ALLOWED_MIMES = [
   "application/pdf",
   "text/plain",
@@ -18,27 +19,27 @@ const ALLOWED_MIMES = [
 ];
 
 export async function uploadFile(formData: FormData): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
-
-  const file = formData.get("file") as File | null;
-  const subjectId = formData.get("subjectId") as string | null;
-  if (!file || !subjectId) return { error: "Missing file or subject" };
-  if (file.size > MAX_FILE_BYTES) return { error: "File too large. Maximum size is 10 MB." };
-
-  let mime = file.type || "application/octet-stream";
-  const ext = (file.name || "").toLowerCase();
-  if (mime === "application/octet-stream" && ext) {
-    if (ext.endsWith(".pdf")) mime = "application/pdf";
-    else if (ext.endsWith(".txt")) mime = "text/plain";
-    else if (ext.endsWith(".jpg") || ext.endsWith(".jpeg")) mime = "image/jpeg";
-    else if (ext.endsWith(".png")) mime = "image/png";
-    else if (ext.endsWith(".webp")) mime = "image/webp";
-  }
-  if (!ALLOWED_MIMES.includes(mime))
-    return { error: "Only PDF, TXT, and JPEG/PNG/WebP are allowed." };
-
   try {
+    const { userId } = await auth();
+    if (!userId) return { error: "Not signed in" };
+
+    const file = formData.get("file") as File | null;
+    const subjectId = formData.get("subjectId") as string | null;
+    if (!file || !subjectId) return { error: "Missing file or subject" };
+    if (file.size > MAX_FILE_BYTES) return { error: "File too large. Maximum size is 4 MB (use a smaller PDF or split it)." };
+
+    let mime = file.type || "application/octet-stream";
+    const ext = (file.name || "").toLowerCase();
+    if (mime === "application/octet-stream" && ext) {
+      if (ext.endsWith(".pdf")) mime = "application/pdf";
+      else if (ext.endsWith(".txt")) mime = "text/plain";
+      else if (ext.endsWith(".jpg") || ext.endsWith(".jpeg")) mime = "image/jpeg";
+      else if (ext.endsWith(".png")) mime = "image/png";
+      else if (ext.endsWith(".webp")) mime = "image/webp";
+    }
+    if (!ALLOWED_MIMES.includes(mime))
+      return { error: "Only PDF, TXT, and JPEG/PNG/WebP are allowed." };
+
     const supabase = createAdminClient();
     const { data: subject } = await supabase
       .from("subjects")
@@ -65,7 +66,16 @@ export async function uploadFile(formData: FormData): Promise<{ error?: string }
       return { error: msg || "Storage upload failed." };
     }
 
-    const { text, error: extractError } = await extractTextFromBuffer(buffer, mime);
+    let text: string | null = null;
+    let extractError: string | undefined;
+    try {
+      const out = await extractTextFromBuffer(buffer, mime);
+      text = out.text || null;
+      extractError = out.error;
+    } catch (extractErr) {
+      const msg = extractErr instanceof Error ? extractErr.message : String(extractErr);
+      return { error: `PDF or file could not be read: ${msg.slice(0, 200)}` };
+    }
     if (extractError && !text) return { error: extractError };
 
     const { error: insertError } = await supabase.from("study_files").insert({
@@ -84,10 +94,9 @@ export async function uploadFile(formData: FormData): Promise<{ error?: string }
     revalidatePath(`/dashboard/subjects/${subjectId}`);
     return {};
   } catch (e) {
-    const err = e instanceof Error ? e : new Error(String(e));
-    console.error("uploadFile error:", err.message);
-    if (err.message.includes("SUPABASE") || err.message.includes("Missing")) return { error: err.message };
-    return { error: err.message || "Upload failed. Check the server terminal." };
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("uploadFile error:", msg);
+    return { error: msg.slice(0, 300) || "Upload failed. Try a smaller file (under 4 MB) or try again." };
   }
 }
 
