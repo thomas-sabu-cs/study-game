@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { BookOpen, Gamepad2, Home, StickyNote } from "lucide-react";
+import { BookOpen, Gamepad2, Home, StickyNote, UserCog } from "lucide-react";
 import { MusicToggle } from "@/components/MusicToggle";
 
 const navLinks = [
@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/cards", label: "Notecards", icon: StickyNote },
   { href: "/play", label: "Play", icon: Gamepad2 },
+  { href: "/profile", label: "Profile", icon: UserCog },
 ];
 
 export function AppNav() {

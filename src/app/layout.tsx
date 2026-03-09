@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { getTotalPlaytimeSeconds } from "@/app/play/actions";
 import { NoiseParticleBackground } from "@/components/NoiseParticleBackground";
+import { StarfieldBackground } from "@/components/StarfieldBackground";
+import { getUserSettings } from "@/app/profile/actions";
 import "./globals.css";
 
 const RAINBOW_UNLOCK_HOURS = 1;
@@ -42,6 +44,8 @@ export default async function RootLayout({
 }>) {
   const totalPlaytimeSeconds = await getTotalPlaytimeSeconds();
   const rainbowUnlocked = totalPlaytimeSeconds >= RAINBOW_UNLOCK_SECONDS;
+   const settings = await getUserSettings();
+   const backgroundMode = settings?.background_mode ?? "stars";
 
   const content = publishableKey ? (
     <ClerkProvider publishableKey={publishableKey}>{children}</ClerkProvider>
@@ -51,7 +55,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-screen font-sans">
-        <NoiseParticleBackground rainbowUnlocked={rainbowUnlocked} />
+        {backgroundMode === "perlin" ? (
+          <NoiseParticleBackground rainbowUnlocked={rainbowUnlocked} />
+        ) : (
+          <StarfieldBackground />
+        )}
         <div className="relative z-[1]">{content}</div>
       </body>
     </html>
