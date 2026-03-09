@@ -58,14 +58,14 @@ function noise(x: number, y: number): number {
 }
 
 const TAU = Math.PI * 2;
-const NUM_PARTICLES = 1400;
+const NUM_PARTICLES = 2400;
 const NOISE_SCALE = 0.01;
 const TRAIL_ALPHA = 0.07;
 const PARTICLE_SPEED = 0.28;
-// Very light pastel green background (#f1f8e9, --pastel-cream)
-const BG_R = 241;
-const BG_G = 248;
-const BG_B = 233;
+// Light green background (204,255,204)
+const BG_R = 204;
+const BG_G = 255;
+const BG_B = 204;
 // Default: pastel pink (#f8bbd9). Unlocked: white.
 const PINK = "rgb(248, 187, 217)";
 const WHITE = "rgb(255, 255, 255)";
@@ -149,7 +149,7 @@ export function NoiseParticleBackground({ rainbowUnlocked }: { rainbowUnlocked: 
           p.y = Math.random() * height;
         }
 
-        context.fillRect(Math.floor(p.x), Math.floor(p.y), 1, 1);
+        context.fillRect(Math.floor(p.x), Math.floor(p.y), 2, 2);
       }
 
       rafId = requestAnimationFrame(draw);
