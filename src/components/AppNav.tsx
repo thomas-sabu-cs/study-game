@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
-import { BookOpen, Gamepad2, Home } from "lucide-react";
+import { BookOpen, Gamepad2, Home, StickyNote } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Locker", icon: BookOpen },
+  { href: "/notes", label: "Notes", icon: StickyNote },
   { href: "/play", label: "Play", icon: Gamepad2 },
 ];
 

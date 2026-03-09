@@ -5,15 +5,15 @@ import { PlayTabs } from "./PlayTabs";
 
 export const dynamic = "force-dynamic";
 
-function formatTime(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const m = Math.floor(seconds / 60);
-  const s = Math.round(seconds % 60);
-  return s ? `${m}m ${s}s` : `${m}m`;
-}
-
 export default async function PlayPage() {
-  const [quizzes, recents] = await Promise.all([getQuizzes(), getRecentAttempts()]);
+  let quizzes: Awaited<ReturnType<typeof getQuizzes>> = [];
+  let recents: Awaited<ReturnType<typeof getRecentAttempts>> = [];
+  let loadError: string | null = null;
+  try {
+    [quizzes, recents] = await Promise.all([getQuizzes(), getRecentAttempts()]);
+  } catch (e) {
+    loadError = e instanceof Error ? e.message : "Could not load play data.";
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-pastel-cream to-pastel-butter/30 p-6">
@@ -23,9 +23,14 @@ export default async function PlayPage() {
           Play
         </h1>
         <p className="mb-6 text-gray-600">
-          Take quizzes from your study files, or pick one below. Check Recents to see your latest scores.
+          Choose a game type and a quiz to play. Quizzes are saved—generate in the Locker, then pick one here. Recents shows your latest scores.
         </p>
 
+        {loadError && (
+          <p className="mb-4 rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-800">
+            {loadError}
+          </p>
+        )}
         <div className="mb-6">
           <Link
             href="/play/flagged"
@@ -39,7 +44,6 @@ export default async function PlayPage() {
         <PlayTabs
           quizzes={quizzes}
           recents={recents}
-          formatTime={formatTime}
         />
       </div>
     </main>

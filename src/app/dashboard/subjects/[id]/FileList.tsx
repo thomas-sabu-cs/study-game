@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { FileText, Sparkles, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { FileText, Sparkles, Loader2, Gamepad2 } from "lucide-react";
 import { generateQuiz } from "./actions";
 import type { StudyFile } from "@/types";
 
@@ -13,10 +13,11 @@ export function FileList({
   files: StudyFile[];
   subjectId: string;
 }) {
-  const router = useRouter();
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [quizName, setQuizName] = useState("");
+  const [createdQuiz, setCreatedQuiz] = useState<{ name: string } | null>(null);
 
   const toggle = (fileId: string) => {
     setSelected((prev) => {
@@ -35,14 +36,16 @@ export function FileList({
     }
     setGenerating(true);
     setError(null);
-    const result = await generateQuiz(ids);
+    setCreatedQuiz(null);
+    const result = await generateQuiz(ids, quizName.trim() || undefined);
     setGenerating(false);
     if (result.error) {
       setError(result.error);
       return;
     }
     if (result.quizId) {
-      router.push(`/play/${result.quizId}`);
+      setCreatedQuiz({ name: result.quizName ?? "Quiz" });
+      setQuizName("");
     }
   }
 
@@ -87,7 +90,30 @@ export function FileList({
           </label>
         </li>
       ))}
-      <li className="pt-2">
+      {createdQuiz && (
+        <li className="rounded-xl border border-pastel-leaf/50 bg-pastel-mint/40 px-4 py-3">
+          <p className="font-medium text-gray-800">Quiz created: &quot;{createdQuiz.name}&quot;</p>
+          <p className="text-sm text-gray-600 mt-1">It&apos;s saved in Play. Choose it there when you want to play.</p>
+          <Link
+            href="/play"
+            className="mt-2 inline-flex items-center gap-2 rounded-lg bg-pastel-sage px-3 py-1.5 text-sm font-medium text-gray-800 hover:bg-pastel-leaf transition"
+          >
+            <Gamepad2 className="h-4 w-4" />
+            Go to Play
+          </Link>
+        </li>
+      )}
+      <li className="pt-2 flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs text-gray-500">Quiz name (optional)</span>
+          <input
+            type="text"
+            value={quizName}
+            onChange={(e) => setQuizName(e.target.value)}
+            placeholder="e.g. Chapter 1 Review"
+            className="rounded-lg border border-pastel-sage/50 px-3 py-2 text-sm w-64 max-w-full"
+          />
+        </label>
         <button
           type="button"
           onClick={handleGenerate}

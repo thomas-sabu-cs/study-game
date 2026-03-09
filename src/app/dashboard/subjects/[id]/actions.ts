@@ -114,7 +114,10 @@ export async function getFilesForSubject(subjectId: string): Promise<StudyFile[]
   }
 }
 
-export async function generateQuiz(fileIds: string[]): Promise<{ quizId?: string; error?: string }> {
+export async function generateQuiz(
+  fileIds: string[],
+  name?: string | null
+): Promise<{ quizId?: string; quizName?: string; error?: string }> {
   const { userId } = await auth();
   if (!userId) return { error: "Not signed in" };
   const ids = Array.isArray(fileIds) ? fileIds : [fileIds].filter(Boolean);
@@ -139,6 +142,7 @@ export async function generateQuiz(fileIds: string[]): Promise<{ quizId?: string
     if (genError) return { error: genError };
     if (!questions.length) return { error: "Could not generate any questions. Try again." };
 
+    const displayName = (name?.trim() || null) as string | null;
     const firstFileId = ids[0];
     const { data: quiz, error: insertError } = await supabase
       .from("quizzes")
@@ -147,8 +151,9 @@ export async function generateQuiz(fileIds: string[]): Promise<{ quizId?: string
         user_id: userId,
         questions,
         source_file_ids: ids,
+        name: displayName,
       })
-      .select("id")
+      .select("id, name")
       .single();
 
     if (insertError) {
@@ -157,7 +162,8 @@ export async function generateQuiz(fileIds: string[]): Promise<{ quizId?: string
     }
     revalidatePath("/dashboard");
     revalidatePath("/play");
-    return { quizId: quiz.id };
+    const quizName = quiz.name ?? `Quiz ${new Date().toLocaleDateString()}`;
+    return { quizId: quiz.id, quizName };
   } catch (e) {
     console.error("generateQuiz:", e);
     return { error: e instanceof Error ? e.message : "Failed to generate quiz" };

@@ -4,20 +4,29 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { explainAnswer } from "@/lib/ai/explain-answer";
+import { analyzeQuizResults as analyzeQuizResultsAI } from "@/lib/ai/analyze-quiz-results";
 import type { QuizQuestion } from "@/types";
 
-export async function getQuizzes(): Promise<{ id: string; created_at: string }[]> {
+export type { CategoryResult, AnalyzeResult } from "@/lib/ai/analyze-quiz-results";
+
+export interface QuizListItem {
+  id: string;
+  created_at: string;
+  name: string | null;
+}
+
+export async function getQuizzes(): Promise<QuizListItem[]> {
   const { userId } = await auth();
   if (!userId) return [];
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("quizzes")
-      .select("id, created_at")
+      .select("id, created_at, name")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(50);
-    return (data ?? []) as { id: string; created_at: string }[];
+    return (data ?? []) as QuizListItem[];
   } catch {
     return [];
   }
@@ -87,6 +96,14 @@ export async function getRecentAttempts(): Promise<RecentAttempt[]> {
   } catch {
     return [];
   }
+}
+
+export async function analyzeQuizResults(
+  questions: QuizQuestion[],
+  answers: boolean[]
+): Promise<{ data?: { categories: { name: string; correct: number; missed: number }[]; suggestions: string[] }; error?: string }> {
+  await auth();
+  return analyzeQuizResultsAI(questions, answers);
 }
 
 export async function explainQuestion(params: {

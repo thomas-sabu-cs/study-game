@@ -20,6 +20,7 @@ import {
   reportQuestion,
   saveQuizAttempt,
 } from "../actions";
+import { ResultsBreakdown } from "./ResultsBreakdown";
 import type { QuizQuestion } from "@/types";
 
 function formatTime(seconds: number): string {
@@ -27,6 +28,19 @@ function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = Math.round(seconds % 60);
   return s ? `${m}m ${s}s` : `${m}m`;
+}
+
+/** Score color: ≤60 red, 60–80 red→yellow, 80–100 yellow→green (HSL). */
+function scoreColor(pct: number): string {
+  if (pct <= 60) return "hsl(0, 70%, 42%)"; // red
+  if (pct < 80) {
+    const t = (pct - 60) / 20; // 0..1
+    const h = 0 + t * 50; // 0° → 50°
+    return `hsl(${h}, 85%, 45%)`;
+  }
+  const t = (pct - 80) / 20; // 0..1
+  const h = 50 + t * 70; // 50° → 120°
+  return `hsl(${h}, 75%, 42%)`;
 }
 
 export function TakeQuizClient({
@@ -50,6 +64,7 @@ export function TakeQuizClient({
   const [reporting, setReporting] = useState(false);
   const [reportNote, setReportNote] = useState("");
   const [flagSuccess, setFlagSuccess] = useState<string | null>(null);
+  const [finalAnswers, setFinalAnswers] = useState<boolean[] | null>(null);
 
   const current = questions[index];
   const isLast = index === questions.length - 1;
@@ -59,6 +74,17 @@ export function TakeQuizClient({
   useEffect(() => {
     questionStartRef.current = Date.now();
   }, [index]);
+
+  if (questions.length === 0) {
+    return (
+      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+        <p className="text-gray-600">No questions in this quiz.</p>
+        <Link href="/play" className="mt-4 inline-block text-pastel-leaf hover:underline">
+          Back to Play
+        </Link>
+      </div>
+    );
+  }
 
   function handleSelect(optionId: string) {
     if (revealed) return;
@@ -116,17 +142,19 @@ export function TakeQuizClient({
   function handleNext() {
     if (isLast) {
       const lastCorrect = correctOption?.id === selectedOptionId;
+      const allAnswers = [...answers, lastCorrect];
       const finalScore = score + (lastCorrect ? 1 : 0);
       const lastQuestionSec = (Date.now() - questionStartRef.current) / 1000;
       const allTimes = [...questionTimes, lastQuestionSec];
       const totalSec = Math.round(allTimes.reduce((a, b) => a + b, 0));
+      setFinalAnswers(allAnswers);
       setTotalTimeSeconds(totalSec);
       setCompletedQuestionTimes(allTimes);
       saveQuizAttempt(
         quizId,
         finalScore,
         questions.length,
-        [...answers, lastCorrect].map((correct, i) => ({ questionIndex: i, correct })),
+        allAnswers.map((correct, i) => ({ questionIndex: i, correct })),
         totalSec,
         allTimes.map((s) => Math.round(s))
       );
@@ -137,22 +165,13 @@ export function TakeQuizClient({
     setAiResult(null);
   }
 
-  if (!current) {
-    return (
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
-        <p className="text-gray-600">No questions in this quiz.</p>
-        <Link href="/play" className="mt-4 inline-block text-pastel-leaf hover:underline">
-          Back to Play
-        </Link>
-      </div>
-    );
-  }
-
   if (index >= questions.length) {
     const pct = Math.round((score / questions.length) * 100);
     const times = completedQuestionTimes.length > 0
       ? completedQuestionTimes.map((s) => Math.round(s))
       : [];
+    const message = pct >= 90 ? "Outstanding!" : pct >= 70 ? "Great job!" : pct >= 50 ? "Nice work!" : "Keep practicing!";
+    const color = scoreColor(pct);
 
     return (
       <div className="space-y-6">
@@ -160,10 +179,11 @@ export function TakeQuizClient({
 
         <div className="rounded-2xl border border-pastel-sage/50 bg-white/80 p-6 shadow-sm transition">
           <div className="text-center">
-            <p className="text-4xl font-bold text-pastel-leaf">
+            <p className="text-lg font-medium mb-2" style={{ color }}>{message}</p>
+            <p className="text-4xl font-bold" style={{ color }}>
               {score} <span className="text-2xl font-normal text-gray-500">/ {questions.length}</span>
             </p>
-            <p className="mt-1 text-lg text-gray-600">{pct}% correct</p>
+            <p className="mt-1 text-lg font-medium" style={{ color }}>{pct}% correct</p>
             {totalTimeSeconds > 0 && (
               <p className="mt-2 flex items-center justify-center gap-1.5 text-gray-500">
                 <Clock className="h-4 w-4" />
@@ -188,6 +208,10 @@ export function TakeQuizClient({
             </div>
           )}
 
+          {finalAnswers && (
+            <ResultsBreakdown questions={questions} answers={finalAnswers} />
+          )}
+
           <p className="mt-4 text-center text-sm text-gray-400">This attempt was saved.</p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -208,6 +232,7 @@ export function TakeQuizClient({
                 setQuestionTimes([]);
                 setTotalTimeSeconds(0);
                 setCompletedQuestionTimes([]);
+                setFinalAnswers(null);
                 setAiResult(null);
               }}
               className="inline-flex items-center gap-2 rounded-xl bg-pastel-mint px-4 py-2.5 text-sm font-medium text-gray-800 hover:bg-pastel-sage transition"
@@ -217,6 +242,17 @@ export function TakeQuizClient({
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (!current) {
+    return (
+      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+        <p className="text-gray-600">No questions in this quiz.</p>
+        <Link href="/play" className="mt-4 inline-block text-pastel-leaf hover:underline">
+          Back to Play
+        </Link>
       </div>
     );
   }

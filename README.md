@@ -23,7 +23,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Use “Open your Locker” to go to the dashboard (auth and full features will be wired in the next steps).
 
-**Database:** Run the SQL migrations in order in Supabase (Dashboard → SQL Editor): `001_subjects.sql`, then `002_study_files_and_quizzes.sql`. **Storage:** Create a bucket named `study-files` in Supabase Dashboard → Storage → New bucket (private is fine).
+**Database:** In Supabase (Dashboard → SQL Editor), run the migrations in order: `001_subjects.sql`, `002_study_files_and_quizzes.sql`, then `003_quiz_attempts_and_flags.sql`. Optionally run `004_multi_file_quiz_and_timing.sql` to add time tracking and multi-file metadata. **Storage:** Create a bucket named `study-files` in Supabase → Storage → New bucket (private is fine).
 
 ### 3. Folder structure
 
