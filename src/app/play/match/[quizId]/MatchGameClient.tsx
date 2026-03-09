@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Clock, RotateCcw, ArrowLeft } from "lucide-react";
 import type { QuizQuestion } from "@/types";
-import { saveQuizAttempt } from "../actions";
+import { saveQuizAttempt } from "../../actions";
 
 type Pair = {
   id: string;
