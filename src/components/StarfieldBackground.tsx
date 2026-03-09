@@ -140,21 +140,23 @@ export function StarfieldBackground() {
     }
 
     function render() {
-      context.clearRect(0, 0, width, height);
+      const ctx = canvasRef.current?.getContext("2d");
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
       stars.forEach((star) => {
-        context.beginPath();
-        context.lineCap = "round";
-        context.lineWidth = STAR_SIZE * star.z * scale;
-        context.globalAlpha = 0.5 + 0.5 * Math.random();
-        context.strokeStyle = STAR_COLOR;
-        context.beginPath();
-        context.moveTo(star.x, star.y);
+        ctx.beginPath();
+        ctx.lineCap = "round";
+        ctx.lineWidth = STAR_SIZE * star.z * scale;
+        ctx.globalAlpha = 0.5 + 0.5 * Math.random();
+        ctx.strokeStyle = STAR_COLOR;
+        ctx.beginPath();
+        ctx.moveTo(star.x, star.y);
         let tailX = velocity.x * 2;
         let tailY = velocity.y * 2;
         if (Math.abs(tailX) < 0.1) tailX = 0.5;
         if (Math.abs(tailY) < 0.1) tailY = 0.5;
-        context.lineTo(star.x + tailX, star.y + tailY);
-        context.stroke();
+        ctx.lineTo(star.x + tailX, star.y + tailY);
+        ctx.stroke();
       });
     }
 
