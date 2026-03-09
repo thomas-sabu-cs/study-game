@@ -13,20 +13,54 @@ type Track = {
 
 const TRACKS: Track[] = [
   {
-    id: "background",
-    title: "Background music",
+    id: "day_off",
+    title: "Day Off",
     artist: "Study Buddy",
     duration: "3:00",
-    src: "/audio/background/background_music.mp3", // update if your filename differs
+    src: "/audio/background/Day%20Off.mp3",
   },
-  // Add more tracks here as you drop mp3s into public/audio
-  // {
-  //   id: "track2",
-  //   title: "Lo‑fi focus",
-  //   artist: "Study Game",
-  //   duration: "2:30",
-  //   src: "/audio/track2.mp3",
-  // },
+  {
+    id: "late_at_night",
+    title: "Late at Night",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Late%20at%20Night.mp3",
+  },
+  {
+    id: "magical_moments",
+    title: "Magical Moments",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Magical%20Moments.mp3",
+  },
+  {
+    id: "morning_routine",
+    title: "Morning Routine",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Morning%20Routine.mp3",
+  },
+  {
+    id: "storm_clouds",
+    title: "Storm Clouds",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Storm%20Clouds.mp3",
+  },
+  {
+    id: "sunset_drive",
+    title: "Sunset Drive",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Sunset%20Drive.mp3",
+  },
+  {
+    id: "vibin",
+    title: "Vibin",
+    artist: "Study Buddy",
+    duration: "3:00",
+    src: "/audio/background/Vibin.mp3",
+  },
 ];
 
 const SRC_KEY = "study-game-music-src";
