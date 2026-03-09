@@ -89,10 +89,12 @@ export function NoiseParticleBackground({ rainbowUnlocked }: { rainbowUnlocked: 
     let rafId: number;
 
     function resize() {
+      const el = canvasRef.current;
+      if (!el) return;
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      el.width = width;
+      el.height = height;
       if (particlesRef.current.length === 0) {
         particlesRef.current = Array.from({ length: NUM_PARTICLES }, () => ({
           x: Math.random() * width,
