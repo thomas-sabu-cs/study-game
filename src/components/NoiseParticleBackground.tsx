@@ -62,10 +62,10 @@ const NUM_PARTICLES = 1400;
 const NOISE_SCALE = 0.01;
 const TRAIL_ALPHA = 0.07;
 const PARTICLE_SPEED = 0.28;
-// Pastel sage green (#a5d6a7)
-const BG_R = 165;
-const BG_G = 214;
-const BG_B = 167;
+// Very light pastel green background (#f1f8e9, --pastel-cream)
+const BG_R = 241;
+const BG_G = 248;
+const BG_B = 233;
 // Default: pastel pink (#f8bbd9). Unlocked: white.
 const PINK = "rgb(248, 187, 217)";
 const WHITE = "rgb(255, 255, 255)";

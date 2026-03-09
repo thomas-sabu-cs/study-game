@@ -20,7 +20,7 @@ export default function HomePage() {
           <SignInButton mode="modal">
             <button
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
+              className="btn-dynamic inline-flex items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
             >
               Sign in to open your Locker
             </button>
@@ -29,7 +29,7 @@ export default function HomePage() {
         <SignedIn>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
+            className="btn-dynamic inline-flex items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
           >
             Open your Locker
           </Link>

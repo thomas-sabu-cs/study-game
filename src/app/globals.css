@@ -17,6 +17,20 @@ body {
   @apply bg-pastel-cream text-gray-800 antialiased;
 }
 
+@layer components {
+  .btn-dynamic {
+    @apply transition-transform duration-150 ease-out;
+    @apply hover:-translate-y-0.5 hover:shadow-md;
+    @apply active:translate-y-0 active:scale-[0.98];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-dynamic {
+    transform: none !important;
+  }
+}
+
 @keyframes float-drift-slow {
   0%,
   100% {

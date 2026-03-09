@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import { BookOpen, Gamepad2, Home, StickyNote } from "lucide-react";
+import { MusicToggle } from "@/components/MusicToggle";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -26,7 +27,7 @@ export function AppNav() {
               <Link
                 key={href}
                 href={href}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 ${
+                className={`btn-dynamic flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition sm:px-4 ${
                   isActive
                     ? "bg-pastel-sage text-gray-800"
                     : "text-gray-600 hover:bg-pastel-mint hover:text-gray-800"
@@ -38,12 +39,15 @@ export function AppNav() {
             );
           })}
         </div>
-        <UserButton
-          afterSignOutUrl="/"
-          appearance={{
-            elements: { avatarBox: "h-9 w-9 ring-2 ring-pastel-sage/50" },
-          }}
-        />
+        <div className="flex items-center gap-2">
+          <MusicToggle />
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: { avatarBox: "h-9 w-9 ring-2 ring-pastel-sage/50" },
+            }}
+          />
+        </div>
       </div>
     </nav>
   );
