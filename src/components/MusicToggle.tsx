@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, SkipBack, SkipForward, Pause, Play } from "lucide-react";
 
 const STORAGE_KEY = "study-game-music-enabled";
 // Default to first playlist track in public/audio/background
 const DEFAULT_SRC = "/audio/background/Day%20Off.mp3";
+const TRACKS_META_KEY = "study-game-music-tracks";
 
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
   const [volume, setVolume] = useState(35);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     try {
@@ -26,14 +28,22 @@ export function MusicToggle() {
     }
   }, []);
 
-  function getOrCreateAudio(): HTMLAudioElement {
-    // Always resolve the desired src from localStorage (or fallback).
-    let src = DEFAULT_SRC;
-    try {
-      const storedSrc = window.localStorage.getItem("study-game-music-src");
-      if (storedSrc) src = storedSrc;
-    } catch {
-      // ignore
+  function getOrCreateAudio(overrideSrc?: string): HTMLAudioElement {
+    // Always resolve the desired src from localStorage (or fallback/override).
+    let src = overrideSrc ?? DEFAULT_SRC;
+    if (!overrideSrc) {
+      try {
+        const storedSrc = window.localStorage.getItem("study-game-music-src");
+        // Only trust values that point at the new background folder.
+        if (storedSrc && storedSrc.startsWith("/audio/background/")) {
+          src = storedSrc;
+        } else if (storedSrc) {
+          // Old/stale value (e.g. /audio/background_music.mp3) – clear it.
+          window.localStorage.removeItem("study-game-music-src");
+        }
+      } catch {
+        // ignore
+      }
     }
     const existing = audioRef.current;
     if (existing) {
@@ -59,6 +69,7 @@ export function MusicToggle() {
     const audio = getOrCreateAudio();
     try {
       await audio.play();
+      setIsPlaying(true);
     } catch {
       // Autoplay might still be blocked; user can tap again.
     }
@@ -73,6 +84,7 @@ export function MusicToggle() {
     } catch {
       // ignore
     }
+    setIsPlaying(false);
   }
 
   function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -88,6 +100,69 @@ export function MusicToggle() {
     const audio = audioRef.current;
     if (audio) {
       audio.volume = clamped / 100;
+    }
+  }
+
+  function getTrackList(): { id: string; src: string }[] {
+    try {
+      const raw = window.localStorage.getItem(TRACKS_META_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((t: any) => (t && t.id && t.src ? { id: String(t.id), src: String(t.src) } : null))
+        .filter(Boolean) as { id: string; src: string }[];
+    } catch {
+      return [];
+    }
+  }
+
+  async function changeTrack(direction: 1 | -1) {
+    const tracks = getTrackList();
+    if (!tracks.length) return;
+    let current = DEFAULT_SRC;
+    try {
+      const stored = window.localStorage.getItem("study-game-music-src");
+      if (stored && stored.startsWith("/audio/background/")) current = stored;
+    } catch {
+      // ignore
+    }
+    let index = tracks.findIndex((t) => t.src === current);
+    if (index === -1) index = 0;
+    const nextIndex = (index + direction + tracks.length) % tracks.length;
+    const nextSrc = tracks[nextIndex].src;
+    try {
+      window.localStorage.setItem("study-game-music-src", nextSrc);
+    } catch {
+      // ignore
+    }
+    const audio = getOrCreateAudio(nextSrc);
+    audio.currentTime = 0;
+    audio.volume = volume / 100;
+    if (enabled) {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        // ignore
+      }
+    } else {
+      setIsPlaying(false);
+    }
+  }
+
+  async function togglePause() {
+    const audio = getOrCreateAudio();
+    if (audio.paused) {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        // ignore
+      }
+    } else {
+      audio.pause();
+      setIsPlaying(false);
     }
   }
 
@@ -114,6 +189,33 @@ export function MusicToggle() {
       >
         {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
         <span className="hidden sm:inline">Music</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => void changeTrack(-1)}
+        className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+        aria-label="Previous track"
+        title="Previous track"
+      >
+        <SkipBack className="h-3 w-3" />
+      </button>
+      <button
+        type="button"
+        onClick={() => void togglePause()}
+        className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+        aria-label={isPlaying ? "Pause" : "Play"}
+        title={isPlaying ? "Pause" : "Play"}
+      >
+        {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+      </button>
+      <button
+        type="button"
+        onClick={() => void changeTrack(1)}
+        className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+        aria-label="Next track"
+        title="Next track"
+      >
+        <SkipForward className="h-3 w-3" />
       </button>
       <input
         type="range"

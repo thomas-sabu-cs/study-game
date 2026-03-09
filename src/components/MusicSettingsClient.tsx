@@ -66,11 +66,13 @@ const TRACKS: Track[] = [
 const SRC_KEY = "study-game-music-src";
 const QUEUE_KEY = "study-game-music-queue";
 const DISLIKED_KEY = "study-game-music-disliked";
+const TRACKS_META_KEY = "study-game-music-tracks";
 
 export function MusicSettingsClient() {
   const [queue, setQueue] = useState<Track[]>(TRACKS);
   const [disliked, setDisliked] = useState<Track[]>([]);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [currentSrc, setCurrentSrc] = useState<string | null>(null);
 
   // Load saved order and disliked list
   useEffect(() => {
@@ -101,10 +103,35 @@ export function MusicSettingsClient() {
         setDisliked(dislikedTracks);
       }
 
+      // Persist track metadata for the toggle controls to use
+      window.localStorage.setItem(
+        TRACKS_META_KEY,
+        JSON.stringify(
+          TRACKS.map((t) => ({
+            id: t.id,
+            src: t.src,
+            title: t.title,
+            artist: t.artist,
+            duration: t.duration,
+          }))
+        )
+      );
+
       // Ensure current src matches first item in queue
       if (initialQueue[0]) {
         window.localStorage.setItem(SRC_KEY, initialQueue[0].src);
+        setCurrentSrc(initialQueue[0].src);
       }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Also respect any existing current src (e.g. after skipping from the nav)
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SRC_KEY);
+      if (stored) setCurrentSrc(stored);
     } catch {
       // ignore
     }
@@ -118,7 +145,22 @@ export function MusicSettingsClient() {
       window.localStorage.setItem(DISLIKED_KEY, JSON.stringify(dislikedTracks.map((t) => t.id)));
       if (queueTracks[0]) {
         window.localStorage.setItem(SRC_KEY, queueTracks[0].src);
+        setCurrentSrc(queueTracks[0].src);
+      } else {
+        setCurrentSrc(null);
       }
+      window.localStorage.setItem(
+        TRACKS_META_KEY,
+        JSON.stringify(
+          TRACKS.map((t) => ({
+            id: t.id,
+            src: t.src,
+            title: t.title,
+            artist: t.artist,
+            duration: t.duration,
+          }))
+        )
+      );
     } catch {
       // ignore
     }
@@ -187,6 +229,11 @@ export function MusicSettingsClient() {
                   <p className="text-xs text-gray-500">{t.artist}</p>
                 </div>
                 <span className="text-xs font-mono text-gray-500">{t.duration}</span>
+                {t.src === currentSrc && (
+                  <span className="ml-1 rounded-full bg-pastel-mint/60 px-2 py-0.5 text-[10px] font-semibold text-gray-800">
+                    Now playing
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => moveToDisliked(t.id)}
