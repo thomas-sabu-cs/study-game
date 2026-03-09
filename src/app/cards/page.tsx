@@ -13,11 +13,11 @@ export default async function CardsPage() {
   return (
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
+        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold">
           <StickyNote className="h-8 w-8 text-pastel-leaf" />
           Notecards
         </h1>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6">
           Create flashcards manually or let AI turn your Notes into question–answer cards. These cards
           will power future games like Match and spaced repetition.
         </p>

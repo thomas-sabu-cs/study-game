@@ -12,8 +12,8 @@ export default function HomePage() {
           <BookOpen className="h-12 w-12 text-gray-800" strokeWidth={1.5} />
           <Sparkles className="h-12 w-12 text-gray-800" strokeWidth={1.5} />
         </div>
-        <h1 className="text-3xl font-bold text-gray-800">Study Buddy</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold">Study Buddy</h1>
+        <p>
           Your cozy locker for subjects, file uploads, and AI-generated quizzes.
         </p>
         <SignedOut>

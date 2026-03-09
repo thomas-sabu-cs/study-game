@@ -25,11 +25,11 @@ export default async function NotesPage() {
   return (
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
+        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold">
           <StickyNote className="h-8 w-8 text-pastel-leaf" />
           Notes
         </h1>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6">
           Upload PDFs or images. We&apos;ll extract the content and turn it into easy-to-digest study notes.
         </p>
 

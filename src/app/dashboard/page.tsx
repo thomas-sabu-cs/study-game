@@ -13,11 +13,11 @@ export default async function DashboardPage() {
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-4xl">
         <header className="mb-8">
-          <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
+          <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold">
             <BookOpen className="h-8 w-8 text-pastel-leaf" />
             Your Locker
           </h1>
-          <p className="text-gray-600">
+          <p>
             Create subjects (e.g. History, Bio), add files, and generate quizzes.
           </p>
         </header>

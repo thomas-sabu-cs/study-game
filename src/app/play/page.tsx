@@ -26,11 +26,11 @@ export default async function PlayPage() {
   return (
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-2xl">
-        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold text-gray-800">
+        <h1 className="mb-2 flex items-center gap-2 text-2xl font-bold">
           <Gamepad2 className="h-8 w-8 text-pastel-leaf" />
           Play
         </h1>
-        <p className="mb-6 text-gray-600">
+        <p className="mb-6">
           Choose a game type and a quiz to play. Quizzes are saved—generate in the Locker, then pick one here. Recents shows your latest scores.
         </p>
 

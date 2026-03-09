@@ -14,15 +14,53 @@ export function MusicToggle() {
   const [volume, setVolume] = useState(35);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTitle, setCurrentTitle] = useState<string | null>(null);
+
+  function broadcastSrc(src: string) {
+    if (typeof window === "undefined") return;
+    try {
+      window.dispatchEvent(
+        new CustomEvent("study-buddy-music-src", { detail: src } as CustomEventInit<string>)
+      );
+    } catch {
+      // ignore
+    }
+  }
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      setEnabled(raw === "true");
+      const initiallyEnabled = raw === "true";
+      setEnabled(initiallyEnabled);
       const volRaw = window.localStorage.getItem("study-game-music-volume");
       const vol = volRaw != null ? Number(volRaw) : 35;
       if (!Number.isNaN(vol) && vol >= 0 && vol <= 100) {
         setVolume(vol);
+      }
+
+      // Sync play/pause icon and track title with any existing global audio element
+      const w = window as any;
+      const existing: HTMLAudioElement | undefined = w[GLOBAL_AUDIO_KEY];
+      if (existing) {
+        audioRef.current = existing;
+        existing.volume = (volRaw != null ? vol : 35) / 100;
+        const actuallyPlaying = !existing.paused && !existing.ended;
+        setIsPlaying(actuallyPlaying);
+
+        const src = existing.src || "";
+        const logicalSrc = src.startsWith("http")
+          ? src.substring(src.indexOf("/audio/"))
+          : src;
+        setCurrentTitle(pickTitleForSrc(logicalSrc || DEFAULT_SRC));
+
+        if (actuallyPlaying && !initiallyEnabled) {
+          setEnabled(true);
+          window.localStorage.setItem(STORAGE_KEY, "true");
+        }
+        if (!actuallyPlaying && initiallyEnabled) {
+          // Music was marked on but nothing is playing; keep enabled but leave isPlaying false
+          setIsPlaying(false);
+        }
       }
     } catch {
       // ignore
@@ -57,7 +95,6 @@ export function MusicToggle() {
       if (!audio) {
         audio = new Audio(src);
         audio.preload = "auto";
-        audio.loop = true;
         w[GLOBAL_AUDIO_KEY] = audio;
       } else {
         const currentSrc = audio.src || "";
@@ -72,7 +109,6 @@ export function MusicToggle() {
     } else {
       audio = new Audio(src);
       audio.preload = "auto";
-      audio.loop = true;
     }
 
     audio.volume = volume / 100;
@@ -118,18 +154,38 @@ export function MusicToggle() {
     }
   }
 
-  function getTrackList(): { id: string; src: string }[] {
+  function getTrackList(): { id: string; src: string; title?: string }[] {
     try {
       const raw = window.localStorage.getItem(TRACKS_META_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       if (!Array.isArray(parsed)) return [];
       return parsed
-        .map((t: any) => (t && t.id && t.src ? { id: String(t.id), src: String(t.src) } : null))
-        .filter(Boolean) as { id: string; src: string }[];
+        .map((t: any) =>
+          t && t.id && t.src
+            ? { id: String(t.id), src: String(t.src), title: t.title as string | undefined }
+            : null
+        )
+        .filter(Boolean) as { id: string; src: string; title?: string }[];
     } catch {
       return [];
     }
+  }
+
+  function pickTitleForSrc(src: string): string | null {
+    if (!src) return null;
+    try {
+      const tracks = getTrackList();
+      const found = tracks.find((t) => t.src === src);
+      if (found && found.title) return found.title;
+    } catch {
+      // ignore
+    }
+    const parts = src.split("/");
+    const file = parts[parts.length - 1] || "";
+    if (!file) return null;
+    const name = file.replace(/\.[^/.]+$/, "").replace(/-/g, " ");
+    return name || null;
   }
 
   async function changeTrack(direction: 1 | -1) {
@@ -151,6 +207,7 @@ export function MusicToggle() {
     } catch {
       // ignore
     }
+    broadcastSrc(nextSrc);
     const audio = getOrCreateAudio(nextSrc);
     audio.currentTime = 0;
     audio.volume = volume / 100;
@@ -158,6 +215,7 @@ export function MusicToggle() {
       try {
         await audio.play();
         setIsPlaying(true);
+        setCurrentTitle(pickTitleForSrc(nextSrc));
       } catch {
         // ignore
       }
@@ -172,6 +230,11 @@ export function MusicToggle() {
       try {
         await audio.play();
         setIsPlaying(true);
+        if (typeof window !== "undefined") {
+          const src =
+            window.localStorage.getItem("study-game-music-src") ?? DEFAULT_SRC;
+          setCurrentTitle(pickTitleForSrc(src));
+        }
       } catch {
         // ignore
       }
@@ -180,6 +243,26 @@ export function MusicToggle() {
       setIsPlaying(false);
     }
   }
+
+  // Allow other components (like MusicSettingsClient) to control playback via a simple event.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      const cmd = ce.detail;
+      if (cmd === "next") {
+        void changeTrack(1);
+      } else if (cmd === "prev") {
+        void changeTrack(-1);
+      } else if (cmd === "toggle") {
+        void togglePause();
+      }
+    };
+    window.addEventListener("study-buddy-music-control", handler as EventListener);
+    return () => {
+      window.removeEventListener("study-buddy-music-control", handler as EventListener);
+    };
+  }, []);
 
   function toggle() {
     const next = !enabled;
@@ -195,17 +278,63 @@ export function MusicToggle() {
 
   return (
     <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={toggle}
-        className="btn-dynamic inline-flex items-center gap-2 rounded-lg border border-pastel-sage/60 bg-white/70 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
-        aria-label={enabled ? "Turn music off" : "Turn music on"}
-        title={enabled ? "Music: on" : "Music: off"}
-      >
-        {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-        <span className="hidden sm:inline">Music</span>
-      </button>
-      <button
+      <div className="flex flex-col items-start gap-1">
+        <span className="max-w-[10rem] truncate text-[11px] font-medium text-gray-700">
+          {currentTitle ?? "Study Buddy mix"}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggle}
+            className="btn-dynamic inline-flex items-center gap-2 rounded-lg border border-pastel-sage/60 bg-white/70 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
+            aria-label={enabled ? "Mute music" : "Unmute music"}
+            title={enabled ? "Mute music" : "Unmute music"}
+          >
+            {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            <span className="hidden sm:inline">{enabled ? "Mute" : "Unmute"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void changeTrack(-1)}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+            aria-label="Previous track"
+            title="Previous track"
+          >
+            <SkipBack className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            onClick={() => void togglePause()}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            title={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => void changeTrack(1)}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"
+            aria-label="Next track"
+            title="Next track"
+          >
+            <SkipForward className="h-3 w-3" />
+          </button>
+        </div>
+      </div>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={volume}
+        onChange={handleVolumeChange}
+        aria-label="Music volume"
+        className="h-1 w-20 cursor-pointer accent-pastel-sage"
+      />
+    </div>
+  );
+}
+
         type="button"
         onClick={() => void changeTrack(-1)}
         className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-1.5 py-1 text-xs text-gray-700 hover:bg-pastel-mint/40"

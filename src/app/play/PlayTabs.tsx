@@ -170,7 +170,7 @@ export function PlayTabs({
                         <div className="flex items-center gap-2 rounded-xl border border-pastel-sage/40 bg-white px-4 py-3">
                           <div className="flex-1 min-w-0">
                             <Link
-                              href={`/play/${q.id}`}
+                              href={`/play/preview/${q.id}`}
                               className="text-sm font-medium text-gray-800 hover:text-pastel-leaf transition"
                             >
                               {quizDisplayName(q)}

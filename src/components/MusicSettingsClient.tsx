@@ -137,6 +137,22 @@ export function MusicSettingsClient() {
     }
   }, []);
 
+  // React when the active track src changes from elsewhere (e.g. MusicToggle skip/next).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      const src = ce.detail;
+      if (typeof src === "string") {
+        setCurrentSrc(src);
+      }
+    };
+    window.addEventListener("study-buddy-music-src", handler as EventListener);
+    return () => {
+      window.removeEventListener("study-buddy-music-src", handler as EventListener);
+    };
+  }, []);
+
   function persist(queueTracks: Track[], dislikedTracks: Track[]) {
     setQueue(queueTracks);
     setDisliked(dislikedTracks);
@@ -202,6 +218,59 @@ export function MusicSettingsClient() {
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          Queue controls
+        </p>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              window.dispatchEvent(
+                new CustomEvent("study-buddy-music-control", {
+                  detail: "prev",
+                } as CustomEventInit<string>)
+              );
+            }}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-2 py-1 text-[10px] text-gray-700 hover:bg-pastel-mint/40"
+            title="Previous track"
+          >
+            ◀ Prev
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              window.dispatchEvent(
+                new CustomEvent("study-buddy-music-control", {
+                  detail: "toggle",
+                } as CustomEventInit<string>)
+              );
+            }}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-2 py-1 text-[10px] text-gray-700 hover:bg-pastel-mint/40"
+            title="Play/Pause"
+          >
+            ⏯
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window === "undefined") return;
+              window.dispatchEvent(
+                new CustomEvent("study-buddy-music-control", {
+                  detail: "next",
+                } as CustomEventInit<string>)
+              );
+            }}
+            className="inline-flex items-center rounded-md border border-pastel-sage/60 bg-white px-2 py-1 text-[10px] text-gray-700 hover:bg-pastel-mint/40"
+            title="Next track"
+          >
+            Next ▶
+          </button>
+        </div>
+      </div>
+
       <div>
         <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
           Queue (first = current)
