@@ -9,12 +9,18 @@ const DEFAULT_SRC = "/audio/background_music.mp3";
 
 export function MusicToggle() {
   const [enabled, setEnabled] = useState(false);
+  const [volume, setVolume] = useState(35);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       setEnabled(raw === "true");
+      const volRaw = window.localStorage.getItem("study-game-music-volume");
+      const vol = volRaw != null ? Number(volRaw) : 35;
+      if (!Number.isNaN(vol) && vol >= 0 && vol <= 100) {
+        setVolume(vol);
+      }
     } catch {
       // ignore
     }
@@ -40,7 +46,7 @@ export function MusicToggle() {
     const audio = new Audio(src);
     audio.loop = true;
     audio.preload = "auto";
-    audio.volume = 0.35;
+    audio.volume = volume / 100;
     audioRef.current = audio;
     return audio;
   }
@@ -65,6 +71,22 @@ export function MusicToggle() {
     }
   }
 
+  function handleVolumeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const next = Number(e.target.value);
+    if (Number.isNaN(next)) return;
+    const clamped = Math.min(100, Math.max(0, next));
+    setVolume(clamped);
+    try {
+      window.localStorage.setItem("study-game-music-volume", String(clamped));
+    } catch {
+      // ignore
+    }
+    const audio = audioRef.current;
+    if (audio) {
+      audio.volume = clamped / 100;
+    }
+  }
+
   function toggle() {
     const next = !enabled;
     setEnabled(next);
@@ -78,16 +100,27 @@ export function MusicToggle() {
   }
 
   return (
-    <button
-      type="button"
-      onClick={toggle}
-      className="btn-dynamic inline-flex items-center gap-2 rounded-lg border border-pastel-sage/60 bg-white/70 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
-      aria-label={enabled ? "Turn music off" : "Turn music on"}
-      title={enabled ? "Music: on" : "Music: off"}
-    >
-      {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-      <span className="hidden sm:inline">Music</span>
-    </button>
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={toggle}
+        className="btn-dynamic inline-flex items-center gap-2 rounded-lg border border-pastel-sage/60 bg-white/70 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
+        aria-label={enabled ? "Turn music off" : "Turn music on"}
+        title={enabled ? "Music: on" : "Music: off"}
+      >
+        {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        <span className="hidden sm:inline">Music</span>
+      </button>
+      <input
+        type="range"
+        min={0}
+        max={100}
+        value={volume}
+        onChange={handleVolumeChange}
+        aria-label="Music volume"
+        className="h-1 w-20 cursor-pointer accent-pastel-sage"
+      />
+    </div>
   );
 }
 
