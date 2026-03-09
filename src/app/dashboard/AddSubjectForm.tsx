@@ -197,9 +197,10 @@ export function AddSubjectForm() {
             <button
               type="button"
               onClick={handleSaveCustomColor}
-              className="text-[11px] font-medium text-pastel-leaf hover:underline"
+              className="mt-1 inline-flex items-center gap-1 rounded-full border border-pastel-sage/70 bg-white px-3 py-1 text-[11px] font-medium text-gray-700 shadow-sm hover:bg-pastel-mint/40 hover:border-pastel-leaf transition"
             >
-              Save this color to your palette
+              <span className="inline-block h-2 w-2 rounded-full bg-pastel-leaf" />
+              Save this color
             </button>
           </div>
         )}
