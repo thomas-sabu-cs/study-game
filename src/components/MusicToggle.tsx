@@ -5,7 +5,7 @@ import { Volume2, VolumeX, SkipBack, SkipForward, Pause, Play } from "lucide-rea
 
 const STORAGE_KEY = "study-game-music-enabled";
 // Default to first playlist track in public/audio/background
-const DEFAULT_SRC = "/audio/background/Day Off.mp3";
+const DEFAULT_SRC = "/audio/background/Day-Off.mp3";
 const TRACKS_META_KEY = "study-game-music-tracks";
 
 export function MusicToggle() {
