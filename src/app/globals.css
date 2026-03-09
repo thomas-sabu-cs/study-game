@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --pastel-mint: #c8e6c9;
+  --pastel-sage: #a5d6a7;
+  --pastel-leaf: #81c784;
+  --pastel-seafoam: #b2dfdb;
+  --pastel-cream: #f1f8e9;
+  --pastel-butter: #dcedc8;
+  --pastel-blossom: #f8bbd9;
+  --pastel-sky: #b3e5fc;
+}
+
+body {
+  @apply bg-pastel-cream text-gray-800 antialiased;
+}
