@@ -16,6 +16,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Study Game – Your Locker",
   description: "Upload notes, generate quizzes, and level up your study streak.",
+  manifest: "/manifest.json",
+  themeColor: "#a5d6a7",
+  appleWebApp: {
+    capable: true,
+    title: "Study Game",
+    statusBarStyle: "black-translucent",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;

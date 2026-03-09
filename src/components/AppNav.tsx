@@ -9,6 +9,7 @@ const navLinks = [
   { href: "/", label: "Home", icon: Home },
   { href: "/dashboard", label: "Locker", icon: BookOpen },
   { href: "/notes", label: "Notes", icon: StickyNote },
+  { href: "/cards", label: "Notecards", icon: StickyNote },
   { href: "/play", label: "Play", icon: Gamepad2 },
 ];
 

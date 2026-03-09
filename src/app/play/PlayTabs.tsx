@@ -47,9 +47,12 @@ export function PlayTabs({
           </button>
           <button
             type="button"
-            disabled
-            title="Coming soon"
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium text-gray-400 cursor-not-allowed"
+            onClick={() => setGameType("match")}
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-t-lg text-sm font-medium transition ${
+              gameType === "match"
+                ? "bg-pastel-sage/70 text-gray-800"
+                : "text-gray-600 hover:bg-pastel-mint/30"
+            }`}
           >
             <Layers className="h-4 w-4" />
             Match
@@ -118,7 +121,29 @@ export function PlayTabs({
               </>
             )}
             {gameType === "match" && (
-              <p className="text-gray-500 py-4">Match game coming soon. Pick a quiz above when it&apos;s ready.</p>
+              <>
+                {quizzes.length === 0 ? (
+                  <p className="text-gray-500 py-4">
+                    No quizzes yet. Add files in your Locker and generate a quiz.
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {quizzes.map((q) => (
+                      <li key={q.id}>
+                        <Link
+                          href={`/play/match/${q.id}`}
+                          className="block rounded-xl border border-pastel-sage/40 bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-pastel-mint/40 transition"
+                        >
+                          {quizDisplayName(q)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <p className="mt-3 text-xs text-gray-500">
+                  Match uses your quiz questions and correct answers. (True/False questions are skipped.)
+                </p>
+              </>
             )}
             {gameType === "notecards" && (
               <p className="text-gray-500 py-4">Notecards coming soon. Pick a quiz above when it&apos;s ready.</p>
