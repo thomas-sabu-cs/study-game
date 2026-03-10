@@ -43,7 +43,8 @@ body {
 
   body.theme-stars-dark .card-surface .text-gray-400,
   body.theme-stars-dark .card-surface .text-gray-300 {
-    @apply text-gray-300;
+    /* Use raw color to avoid Tailwind @apply circular dependency */
+    color: #d1d5db; /* approx Tailwind gray-300 */
   }
 }
 
