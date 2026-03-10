@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ArrowLeft, FileUp, Sparkles } from "lucide-react";
 import { getFilesForSubject } from "./actions";
 import { FileUpload } from "./FileUpload";
 import { FileList } from "./FileList";
+import { getAppUserId } from "@/lib/appUser";
 
 export const dynamic = "force-dynamic";
 
@@ -15,8 +15,7 @@ export default async function SubjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { userId } = await auth();
-  if (!userId) notFound();
+  const userId = await getAppUserId();
 
   const supabase = createAdminClient();
   const { data: subject, error } = await supabase
@@ -58,7 +57,7 @@ export default async function SubjectPage({
         </header>
 
         <div className="space-y-8">
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm">
+          <section className="card-surface p-6">
             <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-800">
               <FileUp className="h-5 w-5 text-pastel-leaf" />
               Upload a file
@@ -69,7 +68,7 @@ export default async function SubjectPage({
             <FileUpload subjectId={id} />
           </section>
 
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm">
+          <section className="card-surface p-6">
             <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-800">
               <Sparkles className="h-5 w-5 text-pastel-leaf" />
               Your files & generate quiz

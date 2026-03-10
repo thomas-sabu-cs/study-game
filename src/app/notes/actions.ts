@@ -1,11 +1,11 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateNotesFromText } from "@/lib/ai/generate-notes";
 import { extractTextFromBuffer } from "@/lib/extract/text";
 import type { StudyFile } from "@/types";
+import { getAppUserId } from "@/lib/appUser";
 
 const BUCKET = "study-files";
 const NOTES_SUBJECT_NAME = "Notes";
@@ -25,8 +25,7 @@ export interface NotesSubject {
 }
 
 export async function getOrCreateNotesSubject(): Promise<NotesSubject | null> {
-  const { userId } = await auth();
-  if (!userId) return null;
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -53,8 +52,7 @@ export async function getOrCreateNotesSubject(): Promise<NotesSubject | null> {
 }
 
 export async function getNotesFiles(subjectId: string): Promise<StudyFile[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -75,8 +73,7 @@ export async function getNotesFiles(subjectId: string): Promise<StudyFile[]> {
 export async function uploadFileForNotes(
   formData: FormData
 ): Promise<{ error?: string; duplicateFileId?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   const subject = await getOrCreateNotesSubject();
   if (!subject) return { error: "Could not get Notes folder." };
@@ -163,8 +160,7 @@ export interface Note {
 }
 
 export async function getNotes(): Promise<Note[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -190,8 +186,7 @@ export async function generateNotes(
   fileIds: string[],
   title?: string | null
 ): Promise<{ noteId?: string; error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   const ids = Array.isArray(fileIds) ? fileIds : [fileIds].filter(Boolean);
   if (ids.length === 0) return { error: "Select at least one file." };
@@ -243,8 +238,7 @@ export async function saveNote(
   title: string | null,
   content: string
 ): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -267,8 +261,7 @@ export async function saveNoteAs(
   content: string,
   sourceFileIds: string[]
 ): Promise<{ noteId?: string; error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();

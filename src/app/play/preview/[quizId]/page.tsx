@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { QuizQuestion } from "@/types";
 import { ArrowLeft, HelpCircle, List } from "lucide-react";
+import { getAppUserId } from "@/lib/appUser";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +13,7 @@ export default async function QuizPreviewPage({
   params: Promise<{ quizId: string }>;
 }) {
   const { quizId } = await params;
-  const { userId } = await auth();
-  if (!userId) notFound();
+  const userId = await getAppUserId();
 
   const supabase = createAdminClient();
   const { data: quiz, error } = await supabase
@@ -46,14 +45,15 @@ export default async function QuizPreviewPage({
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-pastel-sage/50 bg-white/80 p-5 shadow-sm">
+        <div className="card-surface p-5">
           <div className="mb-3 flex items-center gap-2">
             <HelpCircle className="h-5 w-5 text-pastel-leaf" />
             <h1 className="text-lg font-semibold text-gray-800">{title}</h1>
           </div>
           <p className="mb-3 text-sm text-gray-600">
             Preview the questions in this quiz to make sure it&apos;s the one you want, then click
-            **Begin** to start playing.
+            <span className="font-semibold"> Begin </span>
+            to start playing.
           </p>
           <p className="mb-4 text-xs font-medium uppercase tracking-wide text-gray-500 flex items-center gap-1.5">
             <List className="h-3.5 w-3.5" />

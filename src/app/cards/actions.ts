@@ -1,11 +1,11 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { QuizQuestion } from "@/types";
 import { getOrCreateNotesSubject } from "@/app/notes/actions";
 import { generateFlashcardsFromNotes } from "@/lib/ai/generate-flashcards";
+import { getAppUserId } from "@/lib/appUser";
 
 export interface Flashcard {
   id: string;
@@ -22,8 +22,7 @@ export interface NoteSummary {
 }
 
 export async function getFlashcards(): Promise<Flashcard[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -42,8 +41,7 @@ export async function getFlashcards(): Promise<Flashcard[]> {
 }
 
 export async function getNotesForFlashcards(): Promise<NoteSummary[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -66,8 +64,7 @@ export async function getNotesForFlashcards(): Promise<NoteSummary[]> {
 }
 
 export async function createFlashcard(front: string, back: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   const trimmedFront = front.trim();
   const trimmedBack = back.trim();
@@ -90,8 +87,7 @@ export async function createFlashcard(front: string, back: string): Promise<{ er
 }
 
 export async function generateFlashcardsFromNote(noteId: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   if (!noteId) return { error: "Select a note first." };
 
   try {
@@ -126,8 +122,7 @@ export async function generateFlashcardsFromNote(noteId: string): Promise<{ erro
 }
 
 export async function updateFlashcard(id: string, front: string, back: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   const trimmedFront = front.trim();
   const trimmedBack = back.trim();
   if (!trimmedFront || !trimmedBack) return { error: "Front and back are required." };
@@ -147,8 +142,7 @@ export async function updateFlashcard(id: string, front: string, back: string): 
 }
 
 export async function deleteFlashcard(id: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -167,8 +161,7 @@ export async function deleteFlashcard(id: string): Promise<{ error?: string }> {
 export async function createQuizFromAllFlashcards(
   name?: string
 ): Promise<{ quizId?: string; error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data: cards, error } = await supabase

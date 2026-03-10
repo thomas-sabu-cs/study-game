@@ -14,7 +14,7 @@ export default async function ProfilePage({ searchParams }: any) {
 
   return (
     <main className="min-h-screen p-6">
-      <div className="mx-auto max-w-2xl space-y-6 rounded-2xl border border-pastel-sage/50 bg-white/70 p-6 shadow-sm">
+      <div className="mx-auto max-w-2xl space-y-6 card-surface p-6">
         <div className="mb-2 flex items-center justify-between gap-2">
           <h1 className="text-2xl font-bold text-gray-800">Profile & Settings</h1>
           {from && (

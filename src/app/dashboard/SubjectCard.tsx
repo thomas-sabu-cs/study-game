@@ -16,7 +16,7 @@ export function SubjectCard({ subject }: { subject: Subject }) {
   }
 
   return (
-    <li className="group rounded-2xl border border-pastel-sage/50 bg-white/70 shadow-sm transition hover:shadow-md">
+    <li className="group card-surface transition hover:shadow-md">
       <Link
         href={`/dashboard/subjects/${subject.id}`}
         className="flex items-center gap-4 p-4"

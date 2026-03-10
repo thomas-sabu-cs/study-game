@@ -58,7 +58,7 @@ export function PlayTabs({
   const [gameType, setGameType] = useState<"quiz" | "match" | "flashcards">("quiz");
 
   return (
-    <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 shadow-sm overflow-hidden">
+    <div className="card-surface overflow-hidden">
       {/* Game type: Quiz (active), Match / Notecards (coming soon) */}
       <div className="border-b border-pastel-sage/40 px-2 pt-2">
         <p className="text-xs font-medium mb-2 px-2">Game type</p>

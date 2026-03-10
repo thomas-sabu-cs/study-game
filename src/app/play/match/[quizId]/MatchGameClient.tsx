@@ -188,7 +188,7 @@ export function MatchGameClient({
 
   if (pairs.length < 3) {
     return (
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+      <div className="card-surface p-8 text-center">
         <p className="text-gray-700 font-medium">Not enough matchable questions.</p>
         <p className="mt-2 text-sm text-gray-600">
           Match uses multiple-choice questions (True/False are skipped). Generate a quiz with more multiple-choice questions and try again.
@@ -218,7 +218,7 @@ export function MatchGameClient({
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-800">Match complete</h1>
 
-        <div className="rounded-2xl border border-pastel-sage/50 bg-white/80 p-6 shadow-sm">
+        <div className="card-surface p-6">
           <div className="text-center">
             <p className="text-4xl font-bold text-gray-800">
               {score} <span className="text-2xl font-normal text-gray-500">/ {total}</span>
@@ -331,7 +331,7 @@ export function MatchGameClient({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-pastel-sage/50 bg-white/70 p-4">
+        <div className="card-surface p-4">
           <p className="mb-3 text-sm font-medium text-gray-700">Prompts</p>
           <ul className="space-y-2">
             {pairs.map((p, idx) => {
@@ -364,7 +364,7 @@ export function MatchGameClient({
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-pastel-sage/50 bg-white/70 p-4">
+        <div className="card-surface p-4">
           <p className="mb-3 text-sm font-medium text-gray-700">Answers</p>
           <ul className="space-y-2">
             {rightItems.map((r) => {

@@ -19,7 +19,7 @@ export function FlaggedList({ items }: { items: FlaggedItem[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+      <div className="card-surface p-8 text-center">
         <p className="text-gray-500">No flagged or reported questions.</p>
         <p className="mt-1 text-sm text-gray-400">
           Use “Flag for review” or “Report wrong” on a quiz question to see it here.
@@ -31,10 +31,7 @@ export function FlaggedList({ items }: { items: FlaggedItem[] }) {
   return (
     <ul className="space-y-4">
       {items.map((item) => (
-        <li
-          key={item.id}
-          className="rounded-2xl border border-pastel-sage/50 bg-white/70 p-4 shadow-sm"
-        >
+        <li key={item.id} className="card-surface p-4">
           <div className="mb-2 flex items-center gap-2">
             {item.flag_type === "report" ? (
               <AlertTriangle className="h-4 w-4 text-pastel-blossom" />

@@ -34,7 +34,7 @@ export default async function DashboardPage() {
             Subjects
           </h2>
           {subjects.length === 0 ? (
-            <div className="rounded-2xl border border-pastel-sage/50 bg-white/50 p-8 text-center">
+            <div className="card-surface p-8 text-center">
               <FolderPlus className="mx-auto mb-3 h-12 w-12 text-pastel-sage" />
               <p className="text-gray-600">No subjects yet.</p>
               <p className="mt-1 text-sm text-gray-500">

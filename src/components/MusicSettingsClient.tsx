@@ -93,15 +93,24 @@ export function MusicSettingsClient() {
         for (const t of byId.values()) ordered.push(t);
         if (ordered.length) initialQueue = ordered;
       }
-      setQueue(initialQueue);
-
+      let dislikedIds: string[] = [];
       if (dislikedJson) {
-        const dislikedIds: string[] = JSON.parse(dislikedJson);
-        const dislikedTracks = dislikedIds
-          .map((id) => TRACKS.find((t) => t.id === id))
-          .filter(Boolean) as Track[];
-        setDisliked(dislikedTracks);
+        try {
+          dislikedIds = JSON.parse(dislikedJson);
+        } catch {
+          dislikedIds = [];
+        }
       }
+      const dislikedTracks = dislikedIds
+        .map((id) => TRACKS.find((t) => t.id === id))
+        .filter(Boolean) as Track[];
+      setDisliked(dislikedTracks);
+
+      // Ensure queue does not contain any tracks that are in dislikedIds
+      const filteredQueue = initialQueue.filter(
+        (t) => !dislikedIds.includes(t.id)
+      );
+      setQueue(filteredQueue.length ? filteredQueue : initialQueue);
 
       // Persist track metadata for the toggle controls to use
       window.localStorage.setItem(
@@ -118,9 +127,10 @@ export function MusicSettingsClient() {
       );
 
       // Ensure current src matches first item in queue
-      if (initialQueue[0]) {
-        window.localStorage.setItem(SRC_KEY, initialQueue[0].src);
-        setCurrentSrc(initialQueue[0].src);
+      const first = (filteredQueue.length ? filteredQueue : initialQueue)[0];
+      if (first) {
+        window.localStorage.setItem(SRC_KEY, first.src);
+        setCurrentSrc(first.src);
       }
     } catch {
       // ignore

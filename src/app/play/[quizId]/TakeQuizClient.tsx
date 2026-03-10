@@ -115,7 +115,7 @@ export function TakeQuizClient({
 
   if (questions.length === 0) {
     return (
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+      <div className="card-surface p-8 text-center">
         <p className="text-gray-600">No questions in this quiz.</p>
         <Link href="/play" className="mt-4 inline-block text-pastel-leaf hover:underline">
           Back to Play
@@ -238,7 +238,7 @@ export function TakeQuizClient({
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-800">Quiz complete</h1>
 
-        <div className="rounded-2xl border border-pastel-sage/50 bg-white/80 p-6 shadow-sm transition">
+        <div className="card-surface p-6 transition">
           <div className="text-center">
             <p className="text-lg font-medium mb-2" style={{ color }}>{message}</p>
             <p className="text-4xl font-bold" style={{ color }}>
@@ -316,7 +316,7 @@ export function TakeQuizClient({
 
   if (!current) {
     return (
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-8 text-center">
+      <div className="card-surface p-8 text-center">
         <p className="text-gray-600">No questions in this quiz.</p>
         <Link href="/play" className="mt-4 inline-block text-pastel-leaf hover:underline">
           Back to Play
@@ -351,7 +351,7 @@ export function TakeQuizClient({
         </div>
       </div>
 
-      <div className="rounded-2xl border border-pastel-sage/50 bg-white/80 p-5 shadow-sm transition">
+      <div className="card-surface p-5 transition">
         <h2 className="mb-4 text-lg font-semibold leading-snug text-gray-800">{current.question}</h2>
         <ul className="space-y-2">
           {current.options.map((opt) => {

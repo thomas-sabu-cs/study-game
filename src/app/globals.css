@@ -23,6 +23,28 @@ body {
     @apply hover:-translate-y-0.5 hover:shadow-md;
     @apply active:translate-y-0 active:scale-[0.98];
   }
+
+  .card-surface {
+    @apply rounded-2xl border border-pastel-sage/50 bg-white/60 shadow-sm;
+  }
+}
+
+@layer utilities {
+  body.theme-stars-dark .card-surface {
+    @apply bg-gray-900/80 text-gray-100 border-pastel-sage/60;
+  }
+
+  body.theme-stars-dark .card-surface .text-gray-800,
+  body.theme-stars-dark .card-surface .text-gray-700,
+  body.theme-stars-dark .card-surface .text-gray-600,
+  body.theme-stars-dark .card-surface .text-gray-500 {
+    @apply text-gray-100;
+  }
+
+  body.theme-stars-dark .card-surface .text-gray-400,
+  body.theme-stars-dark .card-surface .text-gray-300 {
+    @apply text-gray-300;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

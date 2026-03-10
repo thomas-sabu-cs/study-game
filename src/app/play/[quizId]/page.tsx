@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TakeQuizClient } from "./TakeQuizClient";
 import type { QuizQuestion } from "@/types";
+import { getAppUserId } from "@/lib/appUser";
 
 export const dynamic = "force-dynamic";
 
@@ -12,8 +12,7 @@ export default async function PlayQuizPage({
   params: Promise<{ quizId: string }>;
 }) {
   const { quizId } = await params;
-  const { userId } = await auth();
-  if (!userId) notFound();
+  const userId = await getAppUserId();
 
   const supabase = createAdminClient();
   const { data: quiz, error } = await supabase

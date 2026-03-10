@@ -23,7 +23,7 @@ export default async function CardsPage() {
         </p>
 
         <div className="space-y-8">
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm">
+          <section className="card-surface p-6">
             <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-800">
               <Plus className="h-5 w-5 text-pastel-leaf" />
               Add a card manually
@@ -31,7 +31,7 @@ export default async function CardsPage() {
             <ManualCardForm />
           </section>
 
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm">
+          <section className="card-surface p-6">
             <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-800">
               <Sparkles className="h-5 w-5 text-pastel-leaf" />
               Generate cards from Notes
@@ -39,7 +39,7 @@ export default async function CardsPage() {
             <GenerateFromNoteForm notes={notes} />
           </section>
 
-          <section className="rounded-2xl border border-pastel-sage/50 bg-white/60 p-6 shadow-sm space-y-4">
+          <section className="card-surface p-6 space-y-4">
             <h2 className="mb-1 font-semibold text-gray-800">Your cards</h2>
             <FlashcardList cards={cards} />
             <div className="mt-4 border-t border-pastel-sage/30 pt-4">

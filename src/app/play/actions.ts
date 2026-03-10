@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { explainAnswer } from "@/lib/ai/explain-answer";
 import { analyzeQuizResults as analyzeQuizResultsAI } from "@/lib/ai/analyze-quiz-results";
 import type { QuizQuestion } from "@/types";
+import { getAppUserId } from "@/lib/appUser";
 
 export type { CategoryResult, AnalyzeResult } from "@/lib/ai/analyze-quiz-results";
 
@@ -19,8 +20,7 @@ export interface QuizListItem {
 }
 
 export async function getQuizzes(): Promise<QuizListItem[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data: quizzes } = await supabase
@@ -87,8 +87,7 @@ export interface DeletedQuizItem {
 }
 
 export async function getRecentlyDeletedQuizzes(): Promise<DeletedQuizItem[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -106,8 +105,7 @@ export async function getRecentlyDeletedQuizzes(): Promise<DeletedQuizItem[]> {
 
 /** Total seconds of quiz playtime for the current user (used for rainbow background unlock). */
 export async function getTotalPlaytimeSeconds(): Promise<number> {
-  const { userId } = await auth();
-  if (!userId) return 0;
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -122,8 +120,7 @@ export async function getTotalPlaytimeSeconds(): Promise<number> {
 }
 
 export async function deleteQuiz(quizId: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -140,8 +137,7 @@ export async function deleteQuiz(quizId: string): Promise<{ error?: string }> {
 }
 
 export async function restoreQuiz(quizId: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -158,8 +154,7 @@ export async function restoreQuiz(quizId: string): Promise<{ error?: string }> {
 }
 
 export async function permanentlyDeleteQuiz(quizId: string): Promise<{ error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -184,8 +179,7 @@ export async function saveQuizAttempt(
   questionSeconds?: number[],
   gameType: "quiz" | "match" | "flip" = "quiz"
 ) {
-  const { userId } = await auth();
-  if (!userId) return;
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     await supabase.from("quiz_attempts").insert({
@@ -216,8 +210,7 @@ export interface RecentAttempt {
 }
 
 export async function getRecentAttempts(): Promise<RecentAttempt[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data: attempts } = await supabase
@@ -249,7 +242,7 @@ export async function analyzeQuizResults(
   questions: QuizQuestion[],
   answers: boolean[]
 ): Promise<{ data?: { categories: { name: string; correct: number; missed: number }[]; suggestions: string[] }; error?: string }> {
-  await auth();
+  // Guests are allowed to use AI helpers as well; no user id required here.
   return analyzeQuizResultsAI(questions, answers);
 }
 
@@ -259,13 +252,12 @@ export async function explainQuestion(params: {
   userAnswer: string;
   existingExplanation?: string;
 }): Promise<{ explanation: string; memoryTip: string; error?: string }> {
-  await auth();
+  // Guests are allowed to use AI helpers as well; no user id required here.
   return explainAnswer(params);
 }
 
 export async function flagQuestion(quizId: string, questionId: string) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("question_flags").insert({
@@ -284,8 +276,7 @@ export async function flagQuestion(quizId: string, questionId: string) {
 }
 
 export async function reportQuestion(quizId: string, questionId: string, note?: string) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("question_flags").insert({
@@ -305,8 +296,7 @@ export async function reportQuestion(quizId: string, questionId: string, note?: 
 }
 
 export async function unflagQuestion(flagId: string) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -333,8 +323,7 @@ export interface FlaggedItem {
 }
 
 export async function getFlaggedQuestions(): Promise<FlaggedItem[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data: flags } = await supabase

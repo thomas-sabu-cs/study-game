@@ -1,9 +1,9 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Subject } from "@/types";
+import { getAppUserId } from "@/lib/appUser";
 
 function friendlyDbError(error: unknown): string {
   if (error instanceof Error) {
@@ -22,8 +22,7 @@ function friendlySupabaseError(message: string, code?: string): string {
 }
 
 export async function getSubjects(): Promise<Subject[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -47,8 +46,7 @@ export async function getSubjects(): Promise<Subject[]> {
 }
 
 export async function createSubject(formData: FormData) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   const name = (formData.get("name") as string)?.trim();
   if (!name) return { error: "Subject name is required" };
@@ -77,8 +75,7 @@ export async function createSubject(formData: FormData) {
 }
 
 export async function deleteSubject(id: string) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
 
   const supabase = createAdminClient();
   const { error } = await supabase

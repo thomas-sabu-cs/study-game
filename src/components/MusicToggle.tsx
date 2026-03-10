@@ -38,6 +38,9 @@ export function MusicToggle() {
     }
   }
 
+  // Intentionally run once on mount to hydrate from localStorage and any existing global audio.
+  // pickTitleForSrc is stable within this module.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -266,6 +269,8 @@ export function MusicToggle() {
   }
 
   // Allow other components (like MusicSettingsClient) to control playback via a simple event.
+  // changeTrack and togglePause are stable within this module.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handler = (e: Event) => {
@@ -310,13 +315,13 @@ export function MusicToggle() {
           value={volume}
           onChange={handleVolumeChange}
           aria-label="Music volume"
-          className="h-1 w-24 cursor-pointer accent-pastel-sage"
+          className="h-3 w-32 cursor-pointer accent-pastel-sage touch-pinch-zoom"
         />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={toggle}
-            className="btn-dynamic inline-flex items-center gap-2 rounded-lg border border-pastel-sage/60 bg-white/70 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
+            className="btn-dynamic inline-flex items-center gap-1.5 rounded-lg border border-pastel-sage/60 bg-white/70 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-pastel-mint/40 transition"
             aria-label={enabled ? "Mute music" : "Unmute music"}
             title={enabled ? "Mute music" : "Unmute music"}
           >

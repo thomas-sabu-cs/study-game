@@ -1,12 +1,12 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateQuizQuestions } from "@/lib/ai/gemini";
 import { extractTextFromBuffer } from "@/lib/extract/text";
 import type { StudyFile } from "@/types";
 import crypto from "crypto";
+import { getAppUserId } from "@/lib/appUser";
 
 const BUCKET = "study-files";
 // NOTE: On Vercel, the hard request body limit is ~4.5 MB.
@@ -24,8 +24,7 @@ export async function uploadFile(
   formData: FormData
 ): Promise<{ error?: string; duplicateFileId?: string }> {
   try {
-    const { userId } = await auth();
-    if (!userId) return { error: "Not signed in" };
+    const userId = await getAppUserId();
 
     const file = formData.get("file") as File | null;
     const subjectId = formData.get("subjectId") as string | null;
@@ -125,8 +124,7 @@ export async function uploadFile(
 }
 
 export async function getFilesForSubject(subjectId: string): Promise<StudyFile[]> {
-  const { userId } = await auth();
-  if (!userId) return [];
+  const userId = await getAppUserId();
 
   try {
     const supabase = createAdminClient();
@@ -151,8 +149,7 @@ export async function generateQuiz(
   fileIds: string[],
   name?: string | null
 ): Promise<{ quizId?: string; quizName?: string; error?: string }> {
-  const { userId } = await auth();
-  if (!userId) return { error: "Not signed in" };
+  const userId = await getAppUserId();
   const ids = Array.isArray(fileIds) ? fileIds : [fileIds].filter(Boolean);
   if (ids.length === 0) return { error: "Select at least one file." };
 
