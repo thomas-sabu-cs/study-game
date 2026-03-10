@@ -17,14 +17,27 @@ export default function HomePage() {
           Your cozy locker for subjects, file uploads, and AI-generated quizzes.
         </p>
         <SignedOut>
-          <SignInButton mode="modal">
-            <button
-              type="button"
-              className="btn-dynamic inline-flex items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
+          <div className="space-y-3">
+            <SignInButton mode="modal">
+              <button
+                type="button"
+                className="btn-dynamic inline-flex w-full justify-center items-center gap-2 rounded-xl border-2 border-gray-900 bg-pastel-sage px-6 py-3 text-gray-800 font-medium shadow-sm hover:bg-pastel-leaf transition"
+              >
+                Sign in to open your Locker
+              </button>
+            </SignInButton>
+            <div className="text-xs text-gray-500">or</div>
+            <Link
+              href="/dashboard"
+              className="btn-dynamic inline-flex w-full justify-center items-center gap-2 rounded-xl border border-gray-800/70 bg-white/70 px-6 py-3 text-sm font-medium text-gray-800 hover:bg-pastel-cream/80 transition"
             >
-              Sign in to open your Locker
-            </button>
-          </SignInButton>
+              Continue as guest
+            </Link>
+            <p className="text-xs text-gray-500">
+              Guest mode lets you try Study Buddy without an account. Data is stored in a shared guest
+              space and may be cleared.
+            </p>
+          </div>
         </SignedOut>
         <SignedIn>
           <Link
