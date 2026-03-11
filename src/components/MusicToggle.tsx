@@ -39,8 +39,6 @@ export function MusicToggle() {
   }
 
   // Intentionally run once on mount to hydrate from localStorage and any existing global audio.
-  // pickTitleForSrc is stable within this module.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -79,6 +77,8 @@ export function MusicToggle() {
     } catch {
       // ignore
     }
+    // Mount-only hydration; pickTitleForSrc is module-stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function getOrCreateAudio(overrideSrc?: string): HTMLAudioElement {
@@ -269,8 +269,6 @@ export function MusicToggle() {
   }
 
   // Allow other components (like MusicSettingsClient) to control playback via a simple event.
-  // changeTrack and togglePause are stable within this module.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handler = (e: Event) => {
@@ -288,6 +286,8 @@ export function MusicToggle() {
     return () => {
       window.removeEventListener("study-buddy-music-control", handler as EventListener);
     };
+    // Intentionally run once; handler uses stable module functions.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function toggle() {

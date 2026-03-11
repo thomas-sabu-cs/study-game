@@ -29,7 +29,7 @@ export function GuestModeBanner() {
             Your subjects, notes, and games are stored in a shared guest space and may be cleared.
             <span className="hidden sm:inline"> </span>
             <span className="block sm:inline">
-              <SignUpButton mode="modal" afterSignUpUrl="/dashboard">
+              <SignUpButton mode="modal" fallbackRedirectUrl="/dashboard">
                 <button
                   type="button"
                   className="font-semibold underline underline-offset-2"
