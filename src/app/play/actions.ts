@@ -1,12 +1,13 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { explainAnswer } from "@/lib/ai/explain-answer";
 import { analyzeQuizResults as analyzeQuizResultsAI } from "@/lib/ai/analyze-quiz-results";
 import type { QuizQuestion } from "@/types";
 import { getAppUserId } from "@/lib/appUser";
+import { getCardFolders } from "@/app/cards/actions";
+import { UNASSIGNED_FOLDER_ID } from "@/lib/cardFolders";
 
 export type { CategoryResult, AnalyzeResult } from "@/lib/ai/analyze-quiz-results";
 
@@ -349,4 +350,27 @@ export async function getFlaggedQuestions(): Promise<FlaggedItem[]> {
   } catch {
     return [];
   }
+}
+
+/** Unified dataset for Play: locker quizzes + notecard folders (including Unassigned). */
+export type PlayDataset =
+  | { type: "quiz"; id: string; name: string }
+  | { type: "deck"; id: string; name: string };
+
+export async function getDatasets(): Promise<PlayDataset[]> {
+  const [quizzes, folders] = await Promise.all([getQuizzes(), getCardFolders()]);
+  const list: PlayDataset[] = [];
+
+  for (const q of quizzes) {
+    list.push({
+      type: "quiz",
+      id: q.id,
+      name: (q.name && q.name.trim()) || `Quiz ${new Date(q.created_at).toLocaleDateString()}`,
+    });
+  }
+  list.push({ type: "deck", id: UNASSIGNED_FOLDER_ID, name: "Unassigned" });
+  for (const f of folders) {
+    list.push({ type: "deck", id: f.id, name: f.name });
+  }
+  return list;
 }

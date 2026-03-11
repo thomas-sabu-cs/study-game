@@ -1,23 +1,20 @@
 import Link from "next/link";
-import { Gamepad2, BookOpen, Flag, List, Clock } from "lucide-react";
-import { getQuizzes, getRecentAttempts, getRecentlyDeletedQuizzes } from "./actions";
-import { getFlashcards } from "@/app/cards/actions";
+import { Gamepad2, Flag } from "lucide-react";
+import { getQuizzes, getRecentAttempts, getRecentlyDeletedQuizzes, getDatasets } from "./actions";
 import { PlayTabs } from "./PlayTabs";
 
 export const dynamic = "force-dynamic";
 
 export default async function PlayPage() {
-  let quizzes: Awaited<ReturnType<typeof getQuizzes>> = [];
   let recents: Awaited<ReturnType<typeof getRecentAttempts>> = [];
   let recentlyDeleted: Awaited<ReturnType<typeof getRecentlyDeletedQuizzes>> = [];
-  let flashcards: Awaited<ReturnType<typeof getFlashcards>> = [];
+  let datasets: Awaited<ReturnType<typeof getDatasets>> = [];
   let loadError: string | null = null;
   try {
-    [quizzes, recents, recentlyDeleted, flashcards] = await Promise.all([
-      getQuizzes(),
+    [recents, recentlyDeleted, datasets] = await Promise.all([
       getRecentAttempts(),
       getRecentlyDeletedQuizzes(),
-      getFlashcards(),
+      getDatasets(),
     ]);
   } catch (e) {
     loadError = e instanceof Error ? e.message : "Could not load play data.";
@@ -31,7 +28,7 @@ export default async function PlayPage() {
           Play
         </h1>
         <p className="mb-6">
-          Choose a game type and a quiz to play. Quizzes are saved—generate in the Locker, then pick one here. Recents shows your latest scores.
+          Choose a dataset (locker quiz or notecard folder), then pick Quiz, Match, or Flip. Recents shows your latest scores.
         </p>
 
         {loadError && (
@@ -50,10 +47,9 @@ export default async function PlayPage() {
         </div>
 
         <PlayTabs
-          quizzes={quizzes}
+          datasets={datasets}
           recents={recents}
           recentlyDeleted={recentlyDeleted}
-          flashcards={flashcards}
         />
       </div>
     </main>

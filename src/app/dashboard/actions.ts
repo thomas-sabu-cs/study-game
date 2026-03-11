@@ -5,6 +5,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Subject } from "@/types";
 import { getAppUserId } from "@/lib/appUser";
 
+// Reserved subject used by the Notes page; hidden from locker and not deletable.
+const RESERVED_NOTES_SUBJECT_NAME = "Notes";
+
 function friendlyDbError(error: unknown): string {
   if (error instanceof Error) {
     if (error.message.includes("SUPABASE_SERVICE_ROLE_KEY") || error.message.includes("NEXT_PUBLIC_SUPABASE")) {
@@ -38,7 +41,8 @@ export async function getSubjects(): Promise<Subject[]> {
       console.error("getSubjects failed:", code ?? msg, code ? `(${msg})` : "");
       return [];
     }
-    return (data ?? []) as Subject[];
+    const list = (data ?? []) as Subject[];
+    return list.filter((s) => s.name !== RESERVED_NOTES_SUBJECT_NAME);
   } catch (err) {
     console.error("getSubjects error:", err instanceof Error ? err.message : err);
     return [];
@@ -78,6 +82,23 @@ export async function deleteSubject(id: string) {
   const userId = await getAppUserId();
 
   const supabase = createAdminClient();
+  const { data: subject, error: fetchError } = await supabase
+    .from("subjects")
+    .select("id, name")
+    .eq("id", id)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (fetchError || !subject) {
+    return { error: "Subject not found." };
+  }
+  if (subject.name === RESERVED_NOTES_SUBJECT_NAME) {
+    return {
+      error:
+        "The Notes subject is reserved for the Notes page and can't be deleted from the locker. Your notes and uploaded files are stored there.",
+    };
+  }
+
   const { error } = await supabase
     .from("subjects")
     .delete()

@@ -1,14 +1,19 @@
-import { Sparkles, StickyNote, Plus, Gamepad2 } from "lucide-react";
-import { getFlashcards, getNotesForFlashcards } from "./actions";
+import { Sparkles, StickyNote, Plus, Gamepad2, FolderOpen } from "lucide-react";
+import { getFlashcards, getNotesForFlashcards, getCardFolders, getCardFolderMemberships } from "./actions";
 import { ManualCardForm } from "./ManualCardForm";
 import { GenerateFromNoteForm } from "./GenerateFromNoteForm";
 import { FlashcardList } from "./FlashcardList";
-import { FlashcardGameClient } from "./FlashcardGameClient";
+import { CardFoldersSection } from "./CardFoldersSection";
 
 export const dynamic = "force-dynamic";
 
 export default async function CardsPage() {
-  const [cards, notes] = await Promise.all([getFlashcards(), getNotesForFlashcards()]);
+  const [cards, notes, folders, memberships] = await Promise.all([
+    getFlashcards(),
+    getNotesForFlashcards(),
+    getCardFolders(),
+    getCardFolderMemberships(),
+  ]);
 
   return (
     <main className="min-h-screen p-6">
@@ -40,18 +45,19 @@ export default async function CardsPage() {
           </section>
 
           <section className="card-surface p-6 space-y-4">
+            <h2 className="mb-3 flex items-center gap-2 font-semibold text-gray-800">
+              <FolderOpen className="h-5 w-5 text-pastel-leaf" />
+              Folders
+            </h2>
+            <p className="text-sm text-gray-600">
+              Organize cards into folders. Use &quot;Unassigned&quot; for cards not in any folder. In Play, choose a folder (or a locker quiz) as your dataset, then pick Quiz, Match, or Flip.
+            </p>
+            <CardFoldersSection folders={folders} cards={cards} memberships={memberships} />
+          </section>
+
+          <section className="card-surface p-6 space-y-4">
             <h2 className="mb-1 font-semibold text-gray-800">Your cards</h2>
-            <FlashcardList cards={cards} />
-            <div className="mt-4 border-t border-pastel-sage/30 pt-4">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-800">
-                <Gamepad2 className="h-4 w-4 text-pastel-leaf" />
-                Play flip game
-              </h3>
-              <p className="mb-3 text-xs text-gray-600">
-                Flip through your cards, mark what you know, and see your best accuracy and time.
-              </p>
-              <FlashcardGameClient cards={cards} />
-            </div>
+            <FlashcardList cards={cards} folders={folders} memberships={memberships} />
           </section>
         </div>
       </div>

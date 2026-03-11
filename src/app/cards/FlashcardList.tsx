@@ -2,20 +2,32 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronUp, Pencil, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Trash2, Loader2 } from "lucide-react";
 import type { Flashcard } from "./actions";
-import { updateFlashcard, deleteFlashcard, createQuizFromAllFlashcards } from "./actions";
+import type { CardFolder } from "./actions";
+import { updateFlashcard, deleteFlashcard, addCardsToFolder } from "./actions";
 
-export function FlashcardList({ cards }: { cards: Flashcard[] }) {
+export function FlashcardList({
+  cards,
+  folders = [],
+  memberships = [],
+}: {
+  cards: Flashcard[];
+  folders?: CardFolder[];
+  memberships?: { card_id: string; folder_id: string }[];
+}) {
   const [expanded, setExpanded] = useState<boolean>(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editFront, setEditFront] = useState("");
   const [editBack, setEditBack] = useState("");
-  const [quizName, setQuizName] = useState("");
-  const [quizError, setQuizError] = useState<string | null>(null);
-  const [isQuizPending, startQuizTransition] = useTransition();
   const [isEditPending, startEditTransition] = useTransition();
   const router = useRouter();
+
+  const foldersForCard = (cardId: string) =>
+    memberships
+      .filter((m) => m.card_id === cardId)
+      .map((m) => folders.find((f) => f.id === m.folder_id)?.name)
+      .filter(Boolean) as string[];
 
   if (cards.length === 0) {
     return (
@@ -82,11 +94,38 @@ export function FlashcardList({ cards }: { cards: Flashcard[] }) {
                 </div>
               ) : (
                 <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-gray-800">{c.front}</p>
                     <p className="mt-1 text-gray-600">{c.back}</p>
+                    {folders.length > 0 && foldersForCard(c.id).length > 0 && (
+                      <p className="mt-1 text-[11px] text-gray-500">
+                        In: {foldersForCard(c.id).join(", ")}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {folders.length > 0 && (
+                      <select
+                        className="rounded border border-pastel-sage/50 px-2 py-1 text-[11px]"
+                        defaultValue=""
+                        onChange={(e) => {
+                          const folderId = e.target.value;
+                          if (folderId) {
+                            addCardsToFolder([c.id], folderId).then((res) => {
+                              if (!res.error) router.refresh();
+                            });
+                            e.target.value = "";
+                          }
+                        }}
+                      >
+                        <option value="">Add to folder…</option>
+                        {folders.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     <button
                       type="button"
                       onClick={() => {
@@ -136,45 +175,9 @@ export function FlashcardList({ cards }: { cards: Flashcard[] }) {
           )}
         </button>
       )}
-      <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-pastel-sage/40 pt-3">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs text-gray-500">Quiz name from notecards (optional)</span>
-          <input
-            type="text"
-            value={quizName}
-            onChange={(e) => setQuizName(e.target.value)}
-            placeholder="e.g. Notecards review"
-            className="w-64 max-w-full rounded-lg border border-pastel-sage/50 px-3 py-1.5 text-sm"
-          />
-        </label>
-        <button
-          type="button"
-          disabled={isQuizPending || cards.length === 0}
-          onClick={() => {
-            setQuizError(null);
-            startQuizTransition(async () => {
-              const res = await createQuizFromAllFlashcards(quizName.trim() || undefined);
-              if (res.error) {
-                setQuizError(res.error);
-                return;
-              }
-              if (res.quizId) {
-                setQuizName("");
-                router.push(`/play/${res.quizId}`);
-              }
-            });
-          }}
-          className="inline-flex items-center gap-2 rounded-xl bg-pastel-sage px-4 py-2 text-xs font-medium text-gray-800 hover:bg-pastel-leaf disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isQuizPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-          {isQuizPending ? "Building quiz…" : "Create quiz from all cards"}
-        </button>
-        {quizError && (
-          <p className="w-full text-xs text-red-600">
-            {quizError}
-          </p>
-        )}
-      </div>
+      <p className="mt-3 text-xs text-gray-500">
+        Go to Play to choose a folder (or quiz) and play Quiz, Match, or Flip.
+      </p>
     </div>
   );
 }
