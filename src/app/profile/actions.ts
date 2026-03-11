@@ -1,7 +1,7 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getAppUserId } from "@/lib/appUser";
 
 export type BackgroundMode = "stars" | "starsLight" | "perlin";
 
@@ -11,8 +11,7 @@ export interface UserSettings {
 }
 
 export async function getUserSettings(): Promise<UserSettings | null> {
-  const { userId } = await auth();
-  if (!userId) return null;
+  const userId = await getAppUserId();
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -29,8 +28,7 @@ export async function getUserSettings(): Promise<UserSettings | null> {
 }
 
 export async function updateUserSettings(formData: FormData): Promise<void> {
-  const { userId } = await auth();
-  if (!userId) return;
+  const userId = await getAppUserId();
   const supabase = createAdminClient();
   const rawMode = (formData.get("background_mode") as string | null) || "stars";
   let background_mode: BackgroundMode = "stars";

@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, SignUpButton } from "@clerk/nextjs";
 
 export function GuestModeBanner() {
   const { isLoaded, isSignedIn } = useUser();
@@ -30,9 +29,14 @@ export function GuestModeBanner() {
             Your subjects, notes, and games are stored in a shared guest space and may be cleared.
             <span className="hidden sm:inline"> </span>
             <span className="block sm:inline">
-              <Link href="/sign-up" className="font-semibold underline underline-offset-2">
-                Create a free account
-              </Link>{" "}
+              <SignUpButton mode="modal" afterSignUpUrl="/dashboard">
+                <button
+                  type="button"
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Create a free account
+                </button>
+              </SignUpButton>{" "}
               to keep a private locker synced across devices.
             </span>
           </p>

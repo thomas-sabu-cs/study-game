@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@clerk/nextjs/server";
 import { getUserSettings, updateUserSettings } from "./actions";
 import { MusicSettingsClient } from "@/components/MusicSettingsClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage({ searchParams }: any) {
-  await requireAuth();
   const settings = await getUserSettings();
   const mode = settings?.background_mode ?? "stars";
   const from = typeof searchParams?.from === "string" ? searchParams.from : undefined;
@@ -108,10 +106,5 @@ export default async function ProfilePage({ searchParams }: any) {
       </div>
     </main>
   );
-}
-
-async function requireAuth() {
-  const { userId } = await auth();
-  if (!userId) redirect("/");
 }
 
