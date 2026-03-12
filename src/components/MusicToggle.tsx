@@ -274,12 +274,36 @@ export function MusicToggle() {
     const handler = (e: Event) => {
       const ce = e as CustomEvent<string>;
       const cmd = ce.detail;
+      if (typeof cmd !== "string") return;
       if (cmd === "next") {
         void changeTrack(1);
       } else if (cmd === "prev") {
         void changeTrack(-1);
       } else if (cmd === "toggle") {
         void togglePause();
+      } else if (cmd.startsWith("play:")) {
+        const src = cmd.slice(5);
+        if (!src) return;
+        void (async () => {
+          try {
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem("study-game-music-src", src);
+            }
+          } catch {
+            // ignore
+          }
+          broadcastSrc(src);
+          const audio = getOrCreateAudio(src);
+          audio.currentTime = 0;
+          audio.volume = volume / 100;
+          try {
+            await audio.play();
+            setIsPlaying(true);
+            setCurrentTitle(pickTitleForSrc(src));
+          } catch {
+            // ignore
+          }
+        })();
       }
     };
     window.addEventListener("study-buddy-music-control", handler as EventListener);

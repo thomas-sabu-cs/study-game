@@ -112,11 +112,12 @@ export function MusicSettingsClient() {
       );
       setQueue(filteredQueue.length ? filteredQueue : initialQueue);
 
-      // Persist track metadata for the toggle controls to use
+      // Persist track metadata for the toggle controls to use, in the current queue order.
+      const metaSource = filteredQueue.length ? filteredQueue : initialQueue;
       window.localStorage.setItem(
         TRACKS_META_KEY,
         JSON.stringify(
-          TRACKS.map((t) => ({
+          metaSource.map((t) => ({
             id: t.id,
             src: t.src,
             title: t.title,
@@ -175,10 +176,11 @@ export function MusicSettingsClient() {
       } else {
         setCurrentSrc(null);
       }
+      // Persist metadata in the current queue order so next/prev follow this list.
       window.localStorage.setItem(
         TRACKS_META_KEY,
         JSON.stringify(
-          TRACKS.map((t) => ({
+          queueTracks.map((t) => ({
             id: t.id,
             src: t.src,
             title: t.title,
@@ -303,7 +305,22 @@ export function MusicSettingsClient() {
                 <span className="cursor-move text-gray-400 hover:text-gray-600">
                   <GripVertical className="h-4 w-4" />
                 </span>
-                <div className="flex-1 min-w-0">
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => {
+                    if (typeof window === "undefined") return;
+                    try {
+                      window.localStorage.setItem(SRC_KEY, t.src);
+                    } catch {
+                      // ignore
+                    }
+                    window.dispatchEvent(
+                      new CustomEvent("study-buddy-music-control", {
+                        detail: `play:${t.src}`,
+                      } as CustomEventInit<string>)
+                    );
+                  }}
+                >
                   <p className="truncate font-medium text-gray-800">{t.title}</p>
                   <p className="text-xs text-gray-500">{t.artist}</p>
                   {t.src === currentSrc && (
