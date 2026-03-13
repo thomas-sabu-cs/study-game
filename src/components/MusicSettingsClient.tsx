@@ -113,11 +113,11 @@ export function MusicSettingsClient() {
       setQueue(filteredQueue.length ? filteredQueue : initialQueue);
 
       // Persist track metadata for the toggle controls to use, in the current queue order.
-      const metaSource = filteredQueue.length ? filteredQueue : initialQueue;
+      const effectiveQueue = filteredQueue.length ? filteredQueue : initialQueue;
       window.localStorage.setItem(
         TRACKS_META_KEY,
         JSON.stringify(
-          metaSource.map((t) => ({
+          effectiveQueue.map((t) => ({
             id: t.id,
             src: t.src,
             title: t.title,
@@ -127,11 +127,17 @@ export function MusicSettingsClient() {
         )
       );
 
-      // Ensure current src matches first item in queue
-      const first = (filteredQueue.length ? filteredQueue : initialQueue)[0];
-      if (first) {
-        window.localStorage.setItem(SRC_KEY, first.src);
-        setCurrentSrc(first.src);
+      // Prefer any existing current src (e.g. something already playing from the nav).
+      const storedSrc = window.localStorage.getItem(SRC_KEY);
+      const hasStoredInQueue = storedSrc && effectiveQueue.some((t) => t.src === storedSrc);
+      if (hasStoredInQueue) {
+        setCurrentSrc(storedSrc as string);
+      } else {
+        const first = effectiveQueue[0];
+        if (first) {
+          window.localStorage.setItem(SRC_KEY, first.src);
+          setCurrentSrc(first.src);
+        }
       }
     } catch {
       // ignore
