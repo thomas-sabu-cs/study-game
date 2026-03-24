@@ -109,7 +109,6 @@ export function StarfieldBackground({ variant = "dark" }: { variant?: "dark" | "
       touchInput = true;
       const t = event.touches[0];
       movePointer(t.clientX, t.clientY);
-      event.preventDefault();
     }
 
     function onMouseLeave() {

@@ -19,8 +19,8 @@ export function AppNav() {
 
   return (
     <nav className="sticky top-0 z-10 border-b border-pastel-sage/50 bg-pastel-cream/95 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
-        <div className="flex items-center gap-1 sm:gap-2">
+      <div className="mx-auto flex max-w-4xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="flex items-center gap-1 overflow-x-auto sm:overflow-visible sm:gap-2">
           {navLinks.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
             return (
@@ -39,11 +39,11 @@ export function AppNav() {
             );
           })}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:justify-end">
           <MusicToggle />
           <Link
             href={`/profile?from=${encodeURIComponent(pathname || "/")}`}
-            className="btn-dynamic hidden items-center gap-1.5 rounded-lg border border-pastel-sage/60 bg-white/80 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-pastel-mint/30 sm:inline-flex"
+            className="btn-dynamic inline-flex items-center gap-1.5 rounded-lg border border-pastel-sage/60 bg-white/80 px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-pastel-mint/30"
           >
             <UserCog className="h-3.5 w-3.5" />
             Profile

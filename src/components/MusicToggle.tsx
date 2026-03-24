@@ -249,6 +249,7 @@ export function MusicToggle() {
   }
 
   async function togglePause() {
+    if (!enabled) return;
     const audio = getOrCreateAudio();
     if (audio.paused) {
       try {
@@ -284,6 +285,7 @@ export function MusicToggle() {
       } else if (cmd.startsWith("play:")) {
         const src = cmd.slice(5);
         if (!src) return;
+        if (!enabled) return;
         void (async () => {
           try {
             if (typeof window !== "undefined") {
@@ -350,7 +352,7 @@ export function MusicToggle() {
             title={enabled ? "Mute music" : "Unmute music"}
           >
             {enabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline-block sm:w-[4ch] sm:text-center">
+            <span className="hidden sm:inline-block sm:min-w-[3.25rem] sm:text-center">
               {enabled ? "Mute" : "Unmute"}
             </span>
           </button>

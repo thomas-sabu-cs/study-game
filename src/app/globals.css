@@ -46,6 +46,21 @@ body {
     /* Use raw color to avoid Tailwind @apply circular dependency */
     color: #d1d5db; /* approx Tailwind gray-300 */
   }
+
+  /* Ensure markdown/notes content stays readable on dark cards. */
+  body.theme-stars-dark .card-surface .prose,
+  body.theme-stars-dark .card-surface .prose p,
+  body.theme-stars-dark .card-surface .prose li,
+  body.theme-stars-dark .card-surface .prose ul,
+  body.theme-stars-dark .card-surface .prose ol,
+  body.theme-stars-dark .card-surface .prose h1,
+  body.theme-stars-dark .card-surface .prose h2,
+  body.theme-stars-dark .card-surface .prose h3,
+  body.theme-stars-dark .card-surface .prose h4,
+  body.theme-stars-dark .card-surface .prose strong,
+  body.theme-stars-dark .card-surface .prose code {
+    color: #e5e7eb; /* approx Tailwind gray-200 */
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
